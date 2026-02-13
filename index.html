@@ -393,17 +393,45 @@ const selected = {
   area: null
 };
 async function loadData() { 
-try {
- const res = await fetch("db.json?v=" + new Date().getTime()); 
-const data = await res.json(); 
-dbdata = data.db; // ⭐ 여기 수정 
-optiondata = data.options; // ⭐ 여기 추가 
-init(); 
-updateResult(); 
-} catch (e) { 
-console.error("데이터 로딩 실패:", e); 
-} } 
+  try {
+    const res = await fetch("db.json?v=" + new Date().getTime()); 
+    const data = await res.json(); 
+
+    dbdata = data;                         // 배열 그대로
+    optiondata = generateOptions(data);    // 옵션 자동 생성
+
+    init(); 
+    updateResult(); 
+
+  } catch (e) { 
+    console.error("데이터 로딩 실패:", e); 
+  } 
+}
+
 loadData();
+function generateOptions(db) {
+  const primary = new Set();
+  const secondary = new Set();
+  const skill = new Set();
+  const area = new Set();
+
+  db.forEach(row => {
+    if (row["옵션1"]) primary.add(row["옵션1"]);
+    if (row["옵션2"]) secondary.add(row["옵션2"]);
+    if (row["옵션3"]) skill.add(row["옵션3"]);
+
+    if (row["지역"]) {
+      row["지역"].forEach(a => area.add(a));
+    }
+  });
+
+  return {
+    primary: [...primary].sort(),
+    secondary: [...secondary].sort(),
+    skill: [...skill].sort(),
+    area: [...area].sort()
+  };
+}
 function init() {
   createButtons("primary", optiondata.primary, true);
   createButtons("secondary", optiondata.secondary, true);
