@@ -398,7 +398,8 @@ async function loadData() {
     const res = await fetch("db.json?v=" + new Date().getTime());
     const data = await res.json();
 
-    dbdata = data;
+    dbdata = data.db;          // ⭐ 여기 수정
+    optiondata = data.options; // ⭐ 여기 추가
     init();
     updateResult();
 
