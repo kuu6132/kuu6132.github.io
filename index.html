@@ -566,37 +566,53 @@ function updateResult() {
 
   result.forEach(row => {
 
-    const card = document.createElement("div");
-    const grade = row["성급"] || "5성";
-    const id = row["이름"];
+   const card = document.createElement("div");
+const grade = row["성급"] || "5성";
+const id = row["이름"];
 
-    card.className = "result-card grade-" + grade.replace("성", "");
-    card.dataset.id = id;
+card.className = "result-card grade-" + grade.replace("성", "");
+card.dataset.id = id;
 
-    const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
-    const imageUrl = row["이름"]
-      ? baseUrl + encodeURIComponent(row["이름"]) + ".png"
-      : "";
+const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
+const imageUrl = row["이름"]
+  ? baseUrl + encodeURIComponent(row["이름"]) + ".png"
+  : "";
 
-     card.innerHTML = `
-      <div class="card-image"><img src="${imageUrl}.png"></div>
-      <div class="card-header">
-        <div class="card-title">${row["이름"]}</div>
-        <div class="card-grade">${row["성급"]}</div>
-      </div>
-      <div class="card-options">
-        <span class="option-tag ${isSelected(row["옵션1"]) ? "selected" : ""}">
-          ${row["옵션1"] ?? ""}
-        </span>
-        <span class="option-tag ${isSelected(row["옵션2"]) ? "selected" : ""}">
-          ${row["옵션2"] ?? ""}
-        </span>
-        <span class="option-tag ${isSelected(row["옵션3"]) ? "selected" : ""}">
-          ${row["옵션3"] ?? ""}
-        </span>
-      </div>
-      <div class="card-desc">${row["지역"] ?? ""}</div>
-    `;
+const areaText = Array.isArray(row["지역"])
+  ? row["지역"].join(", ")
+  : row["지역"] ?? "";
+
+card.innerHTML = `
+  <div class="card-image">
+    <img src="${imageUrl}">
+  </div>
+
+  <div class="card-header">
+    <div class="card-title">${row["이름"]}</div>
+    <div class="card-grade">${row["성급"]}</div>
+  </div>
+
+  <div class="card-options">
+    ${row["옵션1"] ? `
+      <span class="option-tag ${isSelected(row["옵션1"]) ? "selected" : ""}">
+        ${row["옵션1"]}
+      </span>` : ""}
+
+    ${row["옵션2"] ? `
+      <span class="option-tag ${isSelected(row["옵션2"]) ? "selected" : ""}">
+        ${row["옵션2"]}
+      </span>` : ""}
+
+    ${row["옵션3"] ? `
+      <span class="option-tag ${isSelected(row["옵션3"]) ? "selected" : ""}">
+        ${row["옵션3"]}
+      </span>` : ""}
+  </div>
+
+  <div class="card-desc">
+    📍 ${areaText}
+  </div>
+`;
 
 
     resultEl.appendChild(card);
