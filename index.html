@@ -605,6 +605,15 @@ function updateResult() {
   currentResult = result;
   updateOptionAvailability();
 }
+function isSelected(option) {
+  if (!option) return false;
+
+  return (
+    selected.primary.includes(option) ||
+    selected.secondary === option ||
+    selected.skill === option
+  );
+}
 
 //////////////////////////////////////////////////////////
 // ✅ 옵션 활성화 제어
