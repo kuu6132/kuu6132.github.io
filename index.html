@@ -392,23 +392,33 @@ const selected = {
   skill: null,
   area: null
 };
+
+//////////////////////////////////////////////////////////
+// ✅ 데이터 로드
+//////////////////////////////////////////////////////////
 async function loadData() { 
   try {
-    const res = await fetch("db.json?v=" + new Date().getTime()); 
-    const data = await res.json(); 
+    const res = await fetch("db.json?v=" + new Date().getTime());
+    const data = await res.json();
 
-    dbdata = data;                         // 배열 그대로
-    optiondata = generateOptions(data);    // 옵션 자동 생성
+    console.log("로드된 데이터:", data);
 
-    init(); 
-    updateResult(); 
+    dbdata = Array.isArray(data) ? data : [];
+    optiondata = generateOptions(dbdata);
+
+    console.log("생성된 옵션:", optiondata);
+
+    init();
+    updateResult();
 
   } catch (e) { 
-    console.error("데이터 로딩 실패:", e); 
-  } 
+    console.error("데이터 로딩 실패:", e);
+  }
 }
 
-loadData();
+//////////////////////////////////////////////////////////
+// ✅ 옵션 자동 생성 (완전 안전 버전)
+//////////////////////////////////////////////////////////
 function generateOptions(db) {
   const primary = new Set();
   const secondary = new Set();
@@ -416,12 +426,26 @@ function generateOptions(db) {
   const area = new Set();
 
   db.forEach(row => {
-    if (row["옵션1"]) primary.add(row["옵션1"]);
-    if (row["옵션2"]) secondary.add(row["옵션2"]);
-    if (row["옵션3"]) skill.add(row["옵션3"]);
+    if (!row) return;
+
+    if (row["옵션1"]) primary.add(row["옵션1"].toString().trim());
+    if (row["옵션2"]) secondary.add(row["옵션2"].toString().trim());
+    if (row["옵션3"]) skill.add(row["옵션3"].toString().trim());
 
     if (row["지역"]) {
-      row["지역"].forEach(a => area.add(a));
+      if (Array.isArray(row["지역"])) {
+        row["지역"].forEach(a => {
+          if (a) area.add(a.toString().trim());
+        });
+      } else {
+        row["지역"]
+          .toString()
+          .split(",")
+          .map(v => v.trim())
+          .forEach(a => {
+            if (a) area.add(a);
+          });
+      }
     }
   });
 
@@ -432,63 +456,66 @@ function generateOptions(db) {
     area: [...area].sort()
   };
 }
+
+//////////////////////////////////////////////////////////
+// ✅ 초기 버튼 생성
+//////////////////////////////////////////////////////////
 function init() {
-  createButtons("primary", optiondata.primary, true);
-  createButtons("secondary", optiondata.secondary, true);
-  createButtons("skill", optiondata.skill, true);
-  createButtons("area", optiondata.area, true);
+
+  if (!optiondata || !optiondata.primary) {
+    console.error("optiondata 오류:", optiondata);
+    return;
+  }
+
+  createButtons("primary", optiondata.primary);
+  createButtons("secondary", optiondata.secondary);
+  createButtons("skill", optiondata.skill);
+  createButtons("area", optiondata.area);
 
   const toggleBtn = document.getElementById("showExcluded");
 
   toggleBtn.addEventListener("change", function () {
-    if (this.checked) {
-      viewMode = "excluded";
-    } else {
-      viewMode = "normal";
-    }
+    viewMode = this.checked ? "excluded" : "normal";
     updateResult();
     updateOptionAvailability();
   });
-
-  // ⭐ 이 줄 추가
-  //updateResult();
 }
 
-  function createButtons(type, list, single) {
-    console.log("createButtons:", type, list);
-    if (!Array.isArray(list)) {
-    console.error("❌ list is not array:", type, list);
+//////////////////////////////////////////////////////////
+// ✅ 버튼 생성
+//////////////////////////////////////////////////////////
+function createButtons(type, list) {
+
+  if (!Array.isArray(list)) {
+    console.error("list 배열 아님:", type, list);
     return;
   }
+
   const wrap = document.getElementById(type);
   wrap.innerHTML = "";
-  // 옵션 버튼들
+
   list.forEach(value => {
     const btn = document.createElement("div");
     btn.className = "btn";
     btn.textContent = value;
-    btn.onclick = () => toggle(type, value, btn );
+    btn.onclick = () => toggle(type, value, btn);
     wrap.appendChild(btn);
   });
 }
 
-function isActive(value, selected) {
-  return value && value === selected ? 'style="background:#f1dc55;color:#000;border-color:#f1dc55"' : '';
-}
+//////////////////////////////////////////////////////////
+// ✅ 결과 업데이트
+//////////////////////////////////////////////////////////
+function updateResult() {
 
-  function updateResult() {
   const resultEl = document.getElementById("result");
   resultEl.innerHTML = "";
 
-  // 1. 선택 여부 확인
-  const hasPrimary = selected.primary && selected.primary.length > 0;
-  const isAnySelected = hasPrimary || !!selected.secondary || !!selected.skill || !!selected.area;
+  const hasPrimary = selected.primary.length > 0;
+  const isAnySelected = hasPrimary || selected.secondary || selected.skill || selected.area;
 
   let result = [];
-  
-  // =========================
-  // 📦 획득만 보기 모드
-  // =========================
+
   if (viewMode === "excluded") {
     result = dbdata.filter(row => excludedIds.has(row["이름"]));
     if (result.length === 0) {
@@ -496,106 +523,67 @@ function isActive(value, selected) {
       return;
     }
   } else {
-    // =========================
-    // 🎯 viewMode = normal
-    // =========================
+
     if (!isAnySelected) {
-            resultEl.innerHTML = `<div class="hint" >🔍 기초 옵션이나 지역을 선택하면 무기가 표시됩니다.</div>`;
+      resultEl.innerHTML = `<div class="hint">🔍 옵션을 선택하세요.</div>`;
       return;
-    } else {
-      result = dbdata.filter(row => {
-        // 🔥 excluded 숨김
-        if (excludedIds.has(row["이름"])) return false;
-
-        const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean).map(v => v.trim());
-
-        // A. Primary 검사: 선택된 기초 옵션 중 하나라도 있으면 통과 (OR)
-        const passPrimary = !hasPrimary || selected.primary.some(sel => rowOpts.includes(sel.trim()));
-
-        // B. 나머지 검사: Secondary, Skill, Area는 선택된 경우 모두 만족해야 함 (AND)
-        const otherCategories = {
-          secondary: selected.secondary,
-          skill: selected.skill,
-          area: selected.area
-        };
-
-        const passOthers = Object.entries(otherCategories).every(([type, sel]) => {
-          if (!sel) return true; // 선택 안 했으면 통과
-          if (type === "area") return row["지역"] && row["지역"].includes(sel);
-          return rowOpts.includes(sel.trim());
-        });
-
-        // 기초 옵션 조건과 기타 조건이 모두 맞아야 최종 표시
-        return passPrimary && passOthers;
-      });
     }
+
+    result = dbdata.filter(row => {
+
+      if (!row) return false;
+      if (excludedIds.has(row["이름"])) return false;
+
+      const rowOpts = [
+        row["옵션1"],
+        row["옵션2"],
+        row["옵션3"]
+      ].filter(Boolean).map(v => v.toString().trim());
+
+      const passPrimary = !hasPrimary ||
+        selected.primary.some(sel => rowOpts.includes(sel));
+
+      const passSecondary = !selected.secondary ||
+        rowOpts.includes(selected.secondary);
+
+      const passSkill = !selected.skill ||
+        rowOpts.includes(selected.skill);
+
+      const passArea = !selected.area ||
+        (row["지역"] &&
+          (Array.isArray(row["지역"])
+            ? row["지역"].includes(selected.area)
+            : row["지역"].toString().includes(selected.area)));
+
+      return passPrimary && passSecondary && passSkill && passArea;
+    });
   }
 
-  // =========================
-  // 카드 렌더링 내 하이라이트 함수 (isSelected)
-  // =========================
-  function isSelected(optionValue) {
-    if (!optionValue) return false;
-    const val = optionValue.trim();
-    return (
-      (selected.primary && selected.primary.includes(val)) || // 배열에 포함되는지 확인
-      val === selected.secondary ||
-      val === selected.skill ||
-      (selected.area && val === selected.area.trim())
-    );
+  if (result.length === 0) {
+    resultEl.innerHTML = `<div class="hint">결과 없음</div>`;
+    return;
   }
 
   result.forEach(row => {
+
     const card = document.createElement("div");
-    const grade = row["성급"];
+    const grade = row["성급"] || "5성";
     const id = row["이름"];
 
     card.className = "result-card grade-" + grade.replace("성", "");
     card.dataset.id = id;
 
-    if (excludedIds.has(id)) {
-      card.classList.add("excluded");
-    }
-
-    // 우클릭 제외 로직
-    card.addEventListener("contextmenu", function (e) {
-      e.preventDefault();
-      if (excludedIds.has(id)) {
-        excludedIds.delete(id);
-        card.classList.remove("excluded");
-      } else {
-        excludedIds.add(id);
-        card.classList.add("excluded");
-      }
-      localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
-      if (viewMode === "normal" && excludedIds.has(id)) {
-        card.remove();
-      }
-    });
-
     const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
     const imageUrl = row["이름"]
-      ? baseUrl + encodeURIComponent(row["이름"])
-      : "https://via.placeholder.com/300x375?text=No+Image";
+      ? baseUrl + encodeURIComponent(row["이름"]) + ".png"
+      : "";
 
     card.innerHTML = `
-      <div class="card-image"><img src="${imageUrl}.png"></div>
+      <div class="card-image"><img src="${imageUrl}"></div>
       <div class="card-header">
         <div class="card-title">${row["이름"]}</div>
         <div class="card-grade">${row["성급"]}</div>
       </div>
-      <div class="card-options">
-        <span class="option-tag ${isSelected(row["옵션1"]) ? "selected" : ""}">
-          ${row["옵션1"] ?? ""}
-        </span>
-        <span class="option-tag ${isSelected(row["옵션2"]) ? "selected" : ""}">
-          ${row["옵션2"] ?? ""}
-        </span>
-        <span class="option-tag ${isSelected(row["옵션3"]) ? "selected" : ""}">
-          ${row["옵션3"] ?? ""}
-        </span>
-      </div>
-      <div class="card-desc">${row["지역"] ?? ""}</div>
     `;
 
     resultEl.appendChild(card);
@@ -605,80 +593,80 @@ function isActive(value, selected) {
   updateOptionAvailability();
 }
 
-function clearExcluded() {
-  excludedIds.clear();
-  localStorage.removeItem("excludedCards");
-  updateResult();
-}
-
+//////////////////////////////////////////////////////////
+// ✅ 옵션 활성화 제어
+//////////////////////////////////////////////////////////
 function updateOptionAvailability() {
+
   const types = ["primary", "secondary", "skill", "area"];
 
   types.forEach(type => {
+
     document.querySelectorAll(`#${type} .btn`).forEach(btn => {
+
       const value = btn.textContent;
 
-      // 1. 이미 내가 누른 버튼은 비활성화 계산 제외
-      const isSelected = type === "primary" 
-        ? selected.primary.includes(value) 
-        : selected[type] === value;
-      
-      if (isSelected) {
-        btn.classList.remove("disabled");
-        return;
+      const testSelection = { ...selected };
+
+      if (type === "primary") {
+        testSelection.primary = [...selected.primary, value];
+      } else {
+        testSelection[type] = value;
       }
-      // 2. 이 버튼을 눌렀을 때 결과가 나올 수 있는지 검사
-      const isPossible = dbdata.some(row => {
+
+      const possible = dbdata.some(row => {
+
+        if (!row) return false;
         if (excludedIds.has(row["이름"])) return false;
 
-        return types.every(t => {
-          let sel = (t === type) 
-            ? (t === "primary" ? [...selected.primary, value] : value) 
-            : selected[t];
+        const rowOpts = [
+          row["옵션1"],
+          row["옵션2"],
+          row["옵션3"]
+        ].filter(Boolean).map(v => v.toString().trim());
 
-          if (!sel || (Array.isArray(sel) && sel.length === 0)) return true;
+        const passPrimary =
+          testSelection.primary.length === 0 ||
+          testSelection.primary.some(sel => rowOpts.includes(sel));
 
-          const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean).map(v => v.trim());
+        const passSecondary =
+          !testSelection.secondary ||
+          rowOpts.includes(testSelection.secondary);
 
-          if (t === "area") {
-            return row["지역"] && row["지역"].includes(sel);
-          }
+        const passSkill =
+          !testSelection.skill ||
+          rowOpts.includes(testSelection.skill);
 
-          // 🔥 수정 포인트: Primary(배열)는 하나라도 포함되면(some) 활성화 유지
-          if (Array.isArray(sel)) {
-            return sel.some(s => rowOpts.includes(s.trim())); 
-          }
-                    return rowOpts.includes(sel.trim());
-        });
+        const passArea =
+          !testSelection.area ||
+          (row["지역"] &&
+            (Array.isArray(row["지역"])
+              ? row["지역"].includes(testSelection.area)
+              : row["지역"].toString().includes(testSelection.area)));
+
+        return passPrimary && passSecondary && passSkill && passArea;
       });
-      btn.classList.toggle("disabled", !isPossible);
+
+      btn.classList.toggle("disabled", !possible);
     });
   });
 }
 
- function clearType(type) {
-  if (type === "primary") {
-    selected[type] = [];
-  } else {
-    selected[type] = null;  
-    }
-  document.querySelectorAll(`#${type} .btn`)
-    .forEach(b => b.classList.remove("active"));
-}
+//////////////////////////////////////////////////////////
+// ✅ 토글 처리
+//////////////////////////////////////////////////////////
+function toggle(type, value, btn) {
 
- function toggle(type, value, btn) {
   if (type === "primary") {
-    // 🔥 Primary: 다중 선택 로직
     const index = selected.primary.indexOf(value);
     if (index > -1) {
-      selected.primary.splice(index, 1); // 이미 있으면 제거
+      selected.primary.splice(index, 1);
       btn.classList.remove("active");
     } else {
-      selected.primary.push(value); // 없으면 추가
+      selected.primary.push(value);
       btn.classList.add("active");
     }
   } else {
-    // 🎯 나머지: 단일 선택 로직 (기존 유지)
     if (selected[type] === value) {
       selected[type] = null;
       btn.classList.remove("active");
@@ -689,12 +677,13 @@ function updateOptionAvailability() {
       btn.classList.add("active");
     }
   }
-  console.log("선택 상태:", selected);
+
   updateResult();
-  // 아래 함수가 버튼의 disabled(비활성화)를 제어합니다.
-  updateOptionAvailability(); 
 }
 
+//////////////////////////////////////////////////////////
+
+loadData();
 </script>
 
 </body>
