@@ -396,20 +396,18 @@ const selected = {
 // ✅ 옵션 생성 함수 추가 (없어서 에러났던 부분)
 //////////////////////////////////////////////////////////
 function generateOptions(data) {
-
   const result = {
-    primary: new Set(),
-    secondary: new Set(),
-    skill: new Set(),
+    primary: new Set(),   // 기초 옵션
+    secondary: new Set(), // 추가 옵션
+    skill: new Set(),     // 스킬 옵션
     area: new Set()
   };
 
   data.forEach(row => {
-
-    ["옵션1","옵션2","옵션3"].forEach(key => {
-      if (row[key]) result.primary.add(row[key]);
-    });
-
+    if (row["옵션1"]) result.primary.add(row["옵션1"]);
+    if (row["옵션2"]) result.secondary.add(row["옵션2"]);
+    if (row["옵션3"]) result.skill.add(row["옵션3"]);
+    
     if (row["지역"]) {
       if (Array.isArray(row["지역"])) {
         row["지역"].forEach(a => result.area.add(a));
@@ -421,12 +419,11 @@ function generateOptions(data) {
 
   return {
     primary: [...result.primary],
-    secondary: [],
-    skill: [],
+    secondary: [...result.secondary],
+    skill: [...result.skill],
     area: [...result.area]
   };
 }
-
 //////////////////////////////////////////////////////////
 // ✅ 선택 여부 체크 함수 (없어서 에러났던 부분)
 //////////////////////////////////////////////////////////
@@ -507,10 +504,10 @@ function clearExcluded() {
 // ✅ 초기 설정
 //////////////////////////////////////////////////////////
 function init() {
-
-  createButtons("primary", optiondata.primary);
-  createButtons("area", optiondata.area);
-
+  createButtons("primary", optiondata.primary);     // 기초 옵션 위치에 생성
+  createButtons("secondary", optiondata.secondary); // 추가 옵션 위치에 생성
+  createButtons("skill", optiondata.skill);         // 스킬 옵션 위치에 생성
+  createButtons("area", optiondata.area);           // 지역 위치에 생성
   const toggleBtn = document.getElementById("showExcluded");
 
   toggleBtn.addEventListener("change", function () {
