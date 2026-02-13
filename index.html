@@ -401,12 +401,8 @@ async function loadData() {
     const res = await fetch("db.json?v=" + new Date().getTime());
     const data = await res.json();
 
-    console.log("로드된 데이터:", data);
-
     dbdata = Array.isArray(data) ? data : [];
     optiondata = generateOptions(dbdata);
-
-    console.log("생성된 옵션:", optiondata);
 
     init();
     updateResult();
@@ -415,57 +411,10 @@ async function loadData() {
     console.error("데이터 로딩 실패:", e);
   }
 }
-
-//////////////////////////////////////////////////////////
-// ✅ 옵션 자동 생성 (완전 안전 버전)
-//////////////////////////////////////////////////////////
-function generateOptions(db) {
-  const primary = new Set();
-  const secondary = new Set();
-  const skill = new Set();
-  const area = new Set();
-
-  db.forEach(row => {
-    if (!row) return;
-
-    if (row["옵션1"]) primary.add(row["옵션1"].toString().trim());
-    if (row["옵션2"]) secondary.add(row["옵션2"].toString().trim());
-    if (row["옵션3"]) skill.add(row["옵션3"].toString().trim());
-
-    if (row["지역"]) {
-      if (Array.isArray(row["지역"])) {
-        row["지역"].forEach(a => {
-          if (a) area.add(a.toString().trim());
-        });
-      } else {
-        row["지역"]
-          .toString()
-          .split(",")
-          .map(v => v.trim())
-          .forEach(a => {
-            if (a) area.add(a);
-          });
-      }
-    }
-  });
-
-  return {
-    primary: [...primary].sort(),
-    secondary: [...secondary].sort(),
-    skill: [...skill].sort(),
-    area: [...area].sort()
-  };
-}
-
 //////////////////////////////////////////////////////////
 // ✅ 초기 버튼 생성
 //////////////////////////////////////////////////////////
 function init() {
-
-  if (!optiondata || !optiondata.primary) {
-    console.error("optiondata 오류:", optiondata);
-    return;
-  }
 
   createButtons("primary", optiondata.primary);
   createButtons("secondary", optiondata.secondary);
@@ -479,30 +428,18 @@ function init() {
     updateResult();
     updateOptionAvailability();
   });
-}
 
-//////////////////////////////////////////////////////////
-// ✅ 버튼 생성
-//////////////////////////////////////////////////////////
-function createButtons(type, list) {
-
-  if (!Array.isArray(list)) {
-    console.error("list 배열 아님:", type, list);
-    return;
+  // 🔥 회색 초기화 버튼
+  const resetBtn = document.getElementById("resetExcluded");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", function () {
+      excludedIds.clear();
+      localStorage.removeItem("excludedCards");
+      updateResult();
+      updateOptionAvailability();
+    });
   }
-
-  const wrap = document.getElementById(type);
-  wrap.innerHTML = "";
-
-  list.forEach(value => {
-    const btn = document.createElement("div");
-    btn.className = "btn";
-    btn.textContent = value;
-    btn.onclick = () => toggle(type, value, btn);
-    wrap.appendChild(btn);
-  });
 }
-
 //////////////////////////////////////////////////////////
 // ✅ 결과 업데이트
 //////////////////////////////////////////////////////////
@@ -526,6 +463,7 @@ function updateResult() {
 
     if (!isAnySelected) {
       resultEl.innerHTML = `<div class="hint">🔍 옵션을 선택하세요.</div>`;
+      updateOptionAvailability(); // 🔥 버튼 복구용
       return;
     }
 
@@ -561,98 +499,93 @@ function updateResult() {
 
   if (result.length === 0) {
     resultEl.innerHTML = `<div class="hint">결과 없음</div>`;
+    updateOptionAvailability(); // 🔥 버튼 복구용
     return;
   }
 
   result.forEach(row => {
 
-   const card = document.createElement("div");
-const grade = row["성급"] || "5성";
-const id = row["이름"];
+    const card = document.createElement("div");
+    const grade = row["성급"] || "5성";
+    const id = row["이름"];
 
-card.className = "result-card grade-" + grade.replace("성", "");
-card.dataset.id = id;
+    card.className = "result-card grade-" + grade.replace("성", "");
+    card.dataset.id = id;
 
-const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
-const imageUrl = row["이름"]
-  ? baseUrl + encodeURIComponent(row["이름"])
-  : "";
+    const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
+    const imageUrl = row["이름"]
+      ? baseUrl + encodeURIComponent(row["이름"])
+      : "";
 
-const areaText = Array.isArray(row["지역"])
-  ? row["지역"].join(", ")
-  : row["지역"] ?? "";
+    const areaText = Array.isArray(row["지역"])
+      ? row["지역"].join(", ")
+      : row["지역"] ?? "";
 
-card.innerHTML = `
-  <div class="card-image">
-    <img src="${imageUrl}">
-  </div>
+    card.innerHTML = `
+      <div class="card-image">
+        <img src="${imageUrl}">
+      </div>
 
-  <div class="card-header">
-    <div class="card-title">${row["이름"]}</div>
-    <div class="card-grade">${row["성급"]}</div>
-  </div>
+      <div class="card-header">
+        <div class="card-title">${row["이름"]}</div>
+        <div class="card-grade">${row["성급"]}</div>
+      </div>
 
-  <div class="card-options">
-    ${row["옵션1"] ? `
-      <span class="option-tag ${isSelected(row["옵션1"]) ? "selected" : ""}">
-        ${row["옵션1"]}
-      </span>` : ""}
+      <div class="card-options">
+        ${row["옵션1"] ? `<span class="option-tag ${isSelected(row["옵션1"]) ? "selected" : ""}">${row["옵션1"]}</span>` : ""}
+        ${row["옵션2"] ? `<span class="option-tag ${isSelected(row["옵션2"]) ? "selected" : ""}">${row["옵션2"]}</span>` : ""}
+        ${row["옵션3"] ? `<span class="option-tag ${isSelected(row["옵션3"]) ? "selected" : ""}">${row["옵션3"]}</span>` : ""}
+      </div>
 
-    ${row["옵션2"] ? `
-      <span class="option-tag ${isSelected(row["옵션2"]) ? "selected" : ""}">
-        ${row["옵션2"]}
-      </span>` : ""}
+      <div class="card-desc">
+        📍 ${areaText}
+      </div>
+    `;
 
-    ${row["옵션3"] ? `
-      <span class="option-tag ${isSelected(row["옵션3"]) ? "selected" : ""}">
-        ${row["옵션3"]}
-      </span>` : ""}
-  </div>
+    // 🔥 제외 상태 유지
+    if (excludedIds.has(id)) {
+      card.classList.add("excluded");
+    }
 
-  <div class="card-desc">
-    📍 ${areaText}
-  </div>
-`;
-if (excludedIds.has(id)) {
-  card.classList.add("excluded");
-}
+    // 🔥 우클릭 제외 처리
+    card.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
 
-card.addEventListener("contextmenu", function (e) {
-  e.preventDefault();
+      if (excludedIds.has(id)) {
+        excludedIds.delete(id);
+        card.classList.remove("excluded");
+      } else {
+        excludedIds.add(id);
+        card.classList.add("excluded");
+      }
 
-  if (excludedIds.has(id)) {
-    excludedIds.delete(id);
-    card.classList.remove("excluded");
-  } else {
-    excludedIds.add(id);
-    card.classList.add("excluded");
-  }
+      localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
+    });
 
-  localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
-});
-
-resultEl.appendChild(card);
-
-    
+    resultEl.appendChild(card);
   });
 
   currentResult = result;
   updateOptionAvailability();
 }
-function isSelected(option) {
-  if (!option) return false;
-
-  return (
-    selected.primary.includes(option) ||
-    selected.secondary === option ||
-    selected.skill === option
-  );
-}
-
 //////////////////////////////////////////////////////////
 // ✅ 옵션 활성화 제어
 //////////////////////////////////////////////////////////
 function updateOptionAvailability() {
+
+  const nothingSelected =
+    selected.primary.length === 0 &&
+    !selected.secondary &&
+    !selected.skill &&
+    !selected.area;
+
+  // 🔥 아무것도 선택 안 했으면 전부 활성화
+  if (nothingSelected) {
+    document.querySelectorAll(".btn").forEach(btn => {
+      btn.classList.remove("disabled");
+    });
+    return;
+  }
 
   const types = ["primary", "secondary", "skill", "area"];
 
@@ -661,7 +594,6 @@ function updateOptionAvailability() {
     document.querySelectorAll(`#${type} .btn`).forEach(btn => {
 
       const value = btn.textContent;
-
       const testSelection = { ...selected };
 
       if (type === "primary") {
@@ -707,38 +639,7 @@ function updateOptionAvailability() {
     });
   });
 }
-
 //////////////////////////////////////////////////////////
-// ✅ 토글 처리
-//////////////////////////////////////////////////////////
-function toggle(type, value, btn) {
-
-  if (type === "primary") {
-    const index = selected.primary.indexOf(value);
-    if (index > -1) {
-      selected.primary.splice(index, 1);
-      btn.classList.remove("active");
-    } else {
-      selected.primary.push(value);
-      btn.classList.add("active");
-    }
-  } else {
-    if (selected[type] === value) {
-      selected[type] = null;
-      btn.classList.remove("active");
-    } else {
-      selected[type] = value;
-      document.querySelectorAll(`#${type} .btn`)
-        .forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-    }
-  }
-
-  updateResult();
-}
-
-//////////////////////////////////////////////////////////
-
 loadData();
 </script>
 
