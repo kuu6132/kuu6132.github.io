@@ -493,7 +493,11 @@ function createButtons(type, values) {
 //////////////////////////////////////////////////////////
 // ✅ 초기화 함수 (HTML onclick과 연결)
 //////////////////////////////////////////////////////////
-
+function clearExcluded() {
+  excludedIds.clear();
+  localStorage.removeItem("excludedCards");
+  updateResult();
+}
 
 //////////////////////////////////////////////////////////
 // ✅ 초기 설정
@@ -642,11 +646,7 @@ function init() {
   currentResult = result;
   updateOptionAvailability();
 }
-function clearExcluded() {
-  excludedIds.clear();
-  localStorage.removeItem("excludedCards");
-  updateResult();
-}
+
 //////////////////////////////////////////////////////////
 // ✅ 버튼 활성화 제어
 //////////////////////////////////////////////////////////
