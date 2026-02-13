@@ -717,6 +717,7 @@ function updateOptionAvailability() {
     }
   document.querySelectorAll(`#${type} .btn`)
     .forEach(b => b.classList.remove("active"));
+updateOptionAvailability(); 
 }
 
  function toggle(type, value, btn) {
