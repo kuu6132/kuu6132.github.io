@@ -652,17 +652,48 @@ function init() {
 // ✅ 버튼 활성화 제어
 //////////////////////////////////////////////////////////
 function updateOptionAvailability() {
+  const types = ["primary", "secondary", "skill", "area"];
 
-  const nothingSelected =
-    selected.primary.length === 0 &&
-    !selected.area;
+  types.forEach(type => {
+    document.querySelectorAll(`#${type} .btn`).forEach(btn => {
+      const value = btn.textContent;
 
-  if (nothingSelected) {
-    document.querySelectorAll(".btn").forEach(btn => {
-      btn.classList.remove("disabled");
+      // 1. 이미 내가 누른 버튼은 비활성화 계산 제외
+      const isSelected = type === "primary" 
+        ? selected.primary.includes(value) 
+        : selected[type] === value;
+      
+      if (isSelected) {
+        btn.classList.remove("disabled");
+        return;
+      }
+      // 2. 이 버튼을 눌렀을 때 결과가 나올 수 있는지 검사
+      const isPossible = dbdata.some(row => {
+        if (excludedIds.has(row["이름"])) return false;
+
+        return types.every(t => {
+          let sel = (t === type) 
+            ? (t === "primary" ? [...selected.primary, value] : value) 
+            : selected[t];
+
+          if (!sel || (Array.isArray(sel) && sel.length === 0)) return true;
+
+          const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean).map(v => v.trim());
+
+          if (t === "area") {
+            return row["지역"] && row["지역"].includes(sel);
+          }
+
+          // 🔥 수정 포인트: Primary(배열)는 하나라도 포함되면(some) 활성화 유지
+          if (Array.isArray(sel)) {
+            return sel.some(s => rowOpts.includes(s.trim())); 
+          }
+                    return rowOpts.includes(sel.trim());
+        });
+      });
+      btn.classList.toggle("disabled", !isPossible);
     });
-    return;
-  }
+  });
 }
 
 //////////////////////////////////////////////////////////
