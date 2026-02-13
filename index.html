@@ -575,7 +575,7 @@ card.dataset.id = id;
 
 const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
 const imageUrl = row["이름"]
-  ? baseUrl + encodeURIComponent(row["이름"]) + ".png"
+  ? baseUrl + encodeURIComponent(row["이름"])
   : "";
 
 const areaText = Array.isArray(row["지역"])
