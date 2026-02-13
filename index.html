@@ -243,7 +243,7 @@
 .card-image img {
   width: 100%;
   height: 100%;
-  object-fit: contain;   /* 비율 유지하며 꽉 채움 */
+  object-fit: ;   /* 비율 유지하며 꽉 채움 */
   display: block;
 }
 .result-card.excluded {
@@ -395,23 +395,31 @@ const selected = {
 
 async function loadData() {
   try {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbyX7jhg84E-sji4QVrCzSFXDccLY4rCM51OK5oKNpUtOxtu510OesOTLqCLUtoIC__ijg/exec?v=" + new Date().getTime());
+    // 💡 GAS URL 대신 내 GitHub의 db.json 경로를 입력하세요.
+    // 예: "https://xn--v42bn6iovfo0a.github.io"
+    const jsonPath = "./db.json?v=" + new Date().getTime(); // 캐시 방지 포함
+    
+    const res = await fetch(jsonPath);
+    
+    if (!res.ok) throw new Error("네트워크 응답이 올바르지 않습니다.");
+    
     const data = await res.json();
 
+    // 데이터 할당
     dbdata = data.db;
     optiondata = data.options;
 
-    console.log("dbdata:", dbdata);
-    console.log("optiondata:", optiondata);
+    console.log("GitHub 데이터 로드 완료:", data);
 
     init();
+    updateOptionAvailability(); // 초기 버튼 상태 계산 추가
     updateResult();
 
   } catch (err) {
-    console.error("데이터 로드 실패:", err);
+    console.error("데이터 로드 실패 (GitHub JSON):", err);
+    // 💡 실패 시 백업으로 GAS API를 호출하는 로직을 넣을 수도 있습니다.
   }
 }
-
 loadData();
 
 function init() {
