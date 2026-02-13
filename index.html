@@ -709,7 +709,44 @@ function updateOptionAvailability() {
     });
   });
 }
-loadData();
+ function clearType(type) {
+  if (type === "primary") {
+    selected[type] = [];
+  } else {
+    selected[type] = null;  
+    }
+  document.querySelectorAll(`#${type} .btn`)
+    .forEach(b => b.classList.remove("active"));
+}
+
+ function toggle(type, value, btn) {
+  if (type === "primary") {
+    // 🔥 Primary: 다중 선택 로직
+    const index = selected.primary.indexOf(value);
+    if (index > -1) {
+      selected.primary.splice(index, 1); // 이미 있으면 제거
+      btn.classList.remove("active");
+    } else {
+      selected.primary.push(value); // 없으면 추가
+      btn.classList.add("active");
+    }
+  } else {
+    // 🎯 나머지: 단일 선택 로직 (기존 유지)
+    if (selected[type] === value) {
+      selected[type] = null;
+      btn.classList.remove("active");
+    } else {
+      selected[type] = value;
+      document.querySelectorAll(`#${type} .btn`)
+        .forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+  }
+  console.log("선택 상태:", selected);
+  updateResult();
+  // 아래 함수가 버튼의 disabled(비활성화)를 제어합니다.
+  updateOptionAvailability(); 
+}
 </script>
 
 </body>
