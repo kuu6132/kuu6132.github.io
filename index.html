@@ -382,6 +382,7 @@ input:checked + .toggle-slider:before {
 <script>
 let dbdata = [];
 let optiondata = {};
+let currentResult = [];
 let excludedIds = new Set(JSON.parse(localStorage.getItem("excludedCards") || "[]"));
 let viewMode = "normal";
 
@@ -392,133 +393,72 @@ const selected = {
   area: null
 };
 
-//////////////////////////////////////////////////////////
-// ✅ 옵션 생성 함수 추가 (없어서 에러났던 부분)
-//////////////////////////////////////////////////////////
-function generateOptions(data) {
-  const result = {
-    primary: new Set(),   // 기초 옵션
-    secondary: new Set(), // 추가 옵션
-    skill: new Set(),     // 스킬 옵션
-    area: new Set()
-  };
-
-  data.forEach(row => {
-    if (row["옵션1"]) result.primary.add(row["옵션1"]);
-    if (row["옵션2"]) result.secondary.add(row["옵션2"]);
-    if (row["옵션3"]) result.skill.add(row["옵션3"]);
-    
-    if (row["지역"]) {
-      if (Array.isArray(row["지역"])) {
-        row["지역"].forEach(a => result.area.add(a));
-      } else {
-        result.area.add(row["지역"]);
-      }
-    }
-  });
-
-  return {
-    primary: [...result.primary],
-    secondary: [...result.secondary],
-    skill: [...result.skill],
-    area: [...result.area]
-  };
-}
-//////////////////////////////////////////////////////////
-// ✅ 선택 여부 체크 함수 (없어서 에러났던 부분)
-//////////////////////////////////////////////////////////
-function isSelected(value) {
-  return selected.primary.includes(value) ||
-         selected.secondary === value ||
-         selected.skill === value;
-}
-
-//////////////////////////////////////////////////////////
-// ✅ 데이터 로드
-//////////////////////////////////////////////////////////
 async function loadData() {
-  const res = await fetch("db.json?v=" + new Date().getTime());
-  dbdata = await res.json();
+  try {
+    const res = await fetch("https://script.google.com/macros/s/AKfycbyX7jhg84E-sji4QVrCzSFXDccLY4rCM51OK5oKNpUtOxtu510OesOTLqCLUtoIC__ijg/exec?v=" + new Date().getTime());
+    const data = await res.json();
 
-  optiondata = generateOptions(dbdata);
+    dbdata = data.db;
+    optiondata = data.options;
 
-  init();
-  updateResult();
+    console.log("dbdata:", dbdata);
+    console.log("optiondata:", optiondata);
+
+    init();
+    updateResult();
+
+  } catch (err) {
+    console.error("데이터 로드 실패:", err);
+  }
 }
 
-//////////////////////////////////////////////////////////
-// ✅ 버튼 생성
-//////////////////////////////////////////////////////////
-function createButtons(type, values) {
+loadData();
 
-  const container = document.getElementById(type);
-
-  values.forEach(value => {
-
-    const btn = document.createElement("button");
-    btn.className = "btn";
-    btn.textContent = value;
-
-    btn.onclick = () => {
-
-      if (type === "primary") {
-
-        if (selected.primary.includes(value)) {
-          selected.primary = selected.primary.filter(v => v !== value);
-          btn.classList.remove("active");
-        } else {
-          selected.primary.push(value);
-          btn.classList.add("active");
-        }
-
-      } else {
-
-        if (selected[type] === value) {
-          selected[type] = null;
-          btn.classList.remove("active");
-        } else {
-          selected[type] = value;
-          document.querySelectorAll(`#${type} .btn`).forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-        }
-      }
-
-      updateResult();
-    };
-
-    container.appendChild(btn);
-  });
-}
-
-//////////////////////////////////////////////////////////
-// ✅ 초기화 함수 (HTML onclick과 연결)
-//////////////////////////////////////////////////////////
-function clearExcluded() {
-  excludedIds.clear();
-  localStorage.removeItem("excludedCards");
-  updateResult();
-}
-
-//////////////////////////////////////////////////////////
-// ✅ 초기 설정
-//////////////////////////////////////////////////////////
 function init() {
-  createButtons("primary", optiondata.primary);     // 기초 옵션 위치에 생성
-  createButtons("secondary", optiondata.secondary); // 추가 옵션 위치에 생성
-  createButtons("skill", optiondata.skill);         // 스킬 옵션 위치에 생성
-  createButtons("area", optiondata.area);           // 지역 위치에 생성
+  createButtons("primary", optiondata.primary, true);
+  createButtons("secondary", optiondata.secondary, true);
+  createButtons("skill", optiondata.skill, true);
+  createButtons("area", optiondata.area, true);
+
   const toggleBtn = document.getElementById("showExcluded");
 
   toggleBtn.addEventListener("change", function () {
-    viewMode = this.checked ? "excluded" : "normal";
+    if (this.checked) {
+      viewMode = "excluded";
+    } else {
+      viewMode = "normal";
+    }
     updateResult();
+    updateOptionAvailability();
+  });
+
+  // ⭐ 이 줄 추가
+  //updateResult();
+}
+
+  function createButtons(type, list, single) {
+    console.log("createButtons:", type, list);
+    if (!Array.isArray(list)) {
+    console.error("❌ list is not array:", type, list);
+    return;
+  }
+  const wrap = document.getElementById(type);
+  wrap.innerHTML = "";
+  // 옵션 버튼들
+  list.forEach(value => {
+    const btn = document.createElement("div");
+    btn.className = "btn";
+    btn.textContent = value;
+    btn.onclick = () => toggle(type, value, btn );
+    wrap.appendChild(btn);
   });
 }
 
-//////////////////////////////////////////////////////////
-// ✅ 결과 업데이트
-//////////////////////////////////////////////////////////
- function updateResult() {
+function isActive(value, selected) {
+  return value && value === selected ? 'style="background:#f1dc55;color:#000;border-color:#f1dc55"' : '';
+}
+
+  function updateResult() {
   const resultEl = document.getElementById("result");
   resultEl.innerHTML = "";
 
@@ -647,9 +587,12 @@ function init() {
   updateOptionAvailability();
 }
 
-//////////////////////////////////////////////////////////
-// ✅ 버튼 활성화 제어
-//////////////////////////////////////////////////////////
+function clearExcluded() {
+  excludedIds.clear();
+  localStorage.removeItem("excludedCards");
+  updateResult();
+}
+
 function updateOptionAvailability() {
   const types = ["primary", "secondary", "skill", "area"];
 
@@ -694,6 +637,7 @@ function updateOptionAvailability() {
     });
   });
 }
+
  function clearType(type) {
   if (type === "primary") {
     selected[type] = [];
@@ -727,11 +671,10 @@ function updateOptionAvailability() {
       btn.classList.add("active");
     }
   }
-  updateResult();
+    updateResult();
   // 아래 함수가 버튼의 disabled(비활성화)를 제어합니다.
   updateOptionAvailability(); 
 }
-
 
 </script>
 
