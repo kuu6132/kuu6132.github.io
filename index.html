@@ -519,7 +519,11 @@ function init() {
 //////////////////////////////////////////////////////////
 // ✅ 결과 업데이트
 //////////////////////////////////////////////////////////
- function updateResult() {
+function isActive(value, selected) {
+  return value && value === selected ? 'style="background:#f1dc55;color:#000;border-color:#f1dc55"' : '';
+}
+
+  function updateResult() {
   const resultEl = document.getElementById("result");
   resultEl.innerHTML = "";
 
