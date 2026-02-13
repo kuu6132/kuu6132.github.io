@@ -654,6 +654,20 @@ function init() {
 function updateOptionAvailability() {
   const types = ["primary", "secondary", "skill", "area"];
 
+  // ✅ 1. 아무것도 선택되지 않았는지 체크
+  const isNothingSelected = 
+    selected.primary.length === 0 && 
+    !selected.secondary && 
+    !selected.skill && 
+    !selected.area;
+
+  // ✅ 2. 아무것도 선택 안 된 초기 상태라면 모든 버튼 활성화 후 종료
+  if (isNothingSelected) {
+    document.querySelectorAll(".btn").forEach(btn => {
+      btn.classList.remove("disabled");
+    });
+    return; // 아래 복잡한 계산 로직을 타지 않고 여기서 끝냄
+  }
   types.forEach(type => {
     document.querySelectorAll(`#${type} .btn`).forEach(btn => {
       const value = btn.textContent;
