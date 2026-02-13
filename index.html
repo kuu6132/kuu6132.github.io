@@ -392,22 +392,17 @@ const selected = {
   skill: null,
   area: null
 };
-
-async function loadData() {
-console.log(data);
-  try {
-    const res = await fetch("db.json?v=" + new Date().getTime());
-    const data = await res.json();
-
-    
-    init();
-    updateResult();
-
-  } catch (e) {
-    console.error("데이터 로딩 실패:", e);
-  }
-}
-
+async function loadData() { 
+try {
+ const res = await fetch("db.json?v=" + new Date().getTime()); 
+const data = await res.json(); 
+dbdata = data.db; // ⭐ 여기 수정 
+optiondata = data.options; // ⭐ 여기 추가 
+init(); 
+updateResult(); 
+} catch (e) { 
+console.error("데이터 로딩 실패:", e); 
+} } 
 loadData();
 function init() {
   createButtons("primary", optiondata.primary, true);
