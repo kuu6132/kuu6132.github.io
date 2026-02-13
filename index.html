@@ -519,70 +519,90 @@ function init() {
 //////////////////////////////////////////////////////////
 // ✅ 결과 업데이트
 //////////////////////////////////////////////////////////
-function updateResult() {
-
+ function updateResult() {
   const resultEl = document.getElementById("result");
   resultEl.innerHTML = "";
 
-  const nothingSelected =
-    selected.primary.length === 0 &&
-    !selected.secondary &&
-    !selected.skill &&
-    !selected.area;
+  // 1. 선택 여부 확인
+  const hasPrimary = selected.primary && selected.primary.length > 0;
+  const isAnySelected = hasPrimary || !!selected.secondary || !!selected.skill || !!selected.area;
 
-  if (viewMode === "normal" && nothingSelected) {
-    resultEl.innerHTML = `<div class="hint">🔍 옵션을 선택하세요.</div>`;
-    updateOptionAvailability();
-    return;
+  let result = [];
+  
+  // =========================
+  // 📦 획득만 보기 모드
+  // =========================
+  if (viewMode === "excluded") {
+    result = dbdata.filter(row => excludedIds.has(row["이름"]));
+    if (result.length === 0) {
+      resultEl.innerHTML = `<div class="hint">파밍 완료한 무기 없음</div>`;
+      return;
+    }
+  } else {
+    // =========================
+    // 🎯 viewMode = normal
+    // =========================
+    if (!isAnySelected) {
+            resultEl.innerHTML = `<div class="hint" >🔍 기초 옵션이나 지역을 선택하면 무기가 표시됩니다.</div>`;
+      return;
+    } else {
+      result = dbdata.filter(row => {
+        // 🔥 excluded 숨김
+        if (excludedIds.has(row["이름"])) return false;
+
+        const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean).map(v => v.trim());
+
+        // A. Primary 검사: 선택된 기초 옵션 중 하나라도 있으면 통과 (OR)
+        const passPrimary = !hasPrimary || selected.primary.some(sel => rowOpts.includes(sel.trim()));
+
+        // B. 나머지 검사: Secondary, Skill, Area는 선택된 경우 모두 만족해야 함 (AND)
+        const otherCategories = {
+          secondary: selected.secondary,
+          skill: selected.skill,
+          area: selected.area
+        };
+
+        const passOthers = Object.entries(otherCategories).every(([type, sel]) => {
+          if (!sel) return true; // 선택 안 했으면 통과
+          if (type === "area") return row["지역"] && row["지역"].includes(sel);
+          return rowOpts.includes(sel.trim());
+        });
+
+        // 기초 옵션 조건과 기타 조건이 모두 맞아야 최종 표시
+        return passPrimary && passOthers;
+      });
+    }
   }
 
-  let result = dbdata.filter(row => {
-
-    if (viewMode === "normal" && excludedIds.has(row["이름"])) return false;
-    if (viewMode === "excluded" && !excludedIds.has(row["이름"])) return false;
-
-    const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean);
-
-    const passPrimary =
-      selected.primary.length === 0 ||
-      selected.primary.some(sel => rowOpts.includes(sel));
-
-    const passArea =
-      !selected.area ||
-      (Array.isArray(row["지역"])
-        ? row["지역"].includes(selected.area)
-        : row["지역"] === selected.area);
-
-    return passPrimary && passArea;
-  });
-
-  if (result.length === 0) {
-    resultEl.innerHTML = `<div class="hint">결과 없음</div>`;
-    updateOptionAvailability();
-    return;
+  // =========================
+  // 카드 렌더링 내 하이라이트 함수 (isSelected)
+  // =========================
+  function isSelected(optionValue) {
+    if (!optionValue) return false;
+    const val = optionValue.trim();
+    return (
+      (selected.primary && selected.primary.includes(val)) || // 배열에 포함되는지 확인
+      val === selected.secondary ||
+      val === selected.skill ||
+      (selected.area && val === selected.area.trim())
+    );
   }
 
   result.forEach(row => {
-
     const card = document.createElement("div");
-    const grade = row["성급"] || "5성";
+    const grade = row["성급"];
     const id = row["이름"];
 
     card.className = "result-card grade-" + grade.replace("성", "");
-card.dataset.id = id; const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/"; const imageUrl = row["이름"] ? baseUrl + encodeURIComponent(row["이름"]) : "";
-    if (excludedIds.has(id)) card.classList.add("excluded");
+    card.dataset.id = id;
 
-    card.innerHTML = `
-      <div class="card-header">
-        <div class="card-title">${row["이름"]}</div>
-        <div class="card-grade">${row["성급"]}</div>
-      </div>
-      <div class="card-desc">📍 ${row["지역"] || ""}</div>
-    `;
+    if (excludedIds.has(id)) {
+      card.classList.add("excluded");
+    }
 
-    card.oncontextmenu = (e) => {
+    // 우클릭 제외 로직
+    card.addEventListener("contextmenu", function (e) {
       e.preventDefault();
-
       if (excludedIds.has(id)) {
         excludedIds.delete(id);
         card.classList.remove("excluded");
@@ -590,13 +610,41 @@ card.dataset.id = id; const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-f
         excludedIds.add(id);
         card.classList.add("excluded");
       }
-
       localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
-    };
+      if (viewMode === "normal" && excludedIds.has(id)) {
+        card.remove();
+      }
+    });
+
+    const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
+    const imageUrl = row["이름"]
+      ? baseUrl + encodeURIComponent(row["이름"])
+      : "https://via.placeholder.com/300x375?text=No+Image";
+
+    card.innerHTML = `
+      <div class="card-image"><img src="${imageUrl}.png"></div>
+      <div class="card-header">
+        <div class="card-title">${row["이름"]}</div>
+        <div class="card-grade">${row["성급"]}</div>
+      </div>
+      <div class="card-options">
+        <span class="option-tag ${isSelected(row["옵션1"]) ? "selected" : ""}">
+          ${row["옵션1"] ?? ""}
+        </span>
+        <span class="option-tag ${isSelected(row["옵션2"]) ? "selected" : ""}">
+          ${row["옵션2"] ?? ""}
+        </span>
+        <span class="option-tag ${isSelected(row["옵션3"]) ? "selected" : ""}">
+          ${row["옵션3"] ?? ""}
+        </span>
+      </div>
+      <div class="card-desc">${row["지역"] ?? ""}</div>
+    `;
 
     resultEl.appendChild(card);
   });
 
+  currentResult = result;
   updateOptionAvailability();
 }
 
