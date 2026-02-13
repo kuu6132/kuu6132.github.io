@@ -394,20 +394,20 @@ const selected = {
 };
 
 async function loadData() {
-  const res = await fetch("db.json?v=" + new Date().getTime());
-  dbdata = await res.json();
+  try {
+    const res = await fetch("db.json?v=" + new Date().getTime());
+    const data = await res.json();
 
-
-       init();
+    dbdata = data;
+    init();
     updateResult();
 
-  } catch (err) {
-    console.error("데이터 로드 실패:", err);
+  } catch (e) {
+    console.error("데이터 로딩 실패:", e);
   }
 }
 
 loadData();
-
 function init() {
   createButtons("primary", optiondata.primary, true);
   createButtons("secondary", optiondata.secondary, true);
