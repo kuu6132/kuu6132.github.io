@@ -394,17 +394,11 @@ const selected = {
 };
 
 async function loadData() {
-  try {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbyX7jhg84E-sji4QVrCzSFXDccLY4rCM51OK5oKNpUtOxtu510OesOTLqCLUtoIC__ijg/exec?v=" + new Date().getTime());
-    const data = await res.json();
+  const res = await fetch("db.json?v=" + new Date().getTime());
+  dbdata = await res.json();
 
-    dbdata = data.db;
-    optiondata = data.options;
 
-    console.log("dbdata:", dbdata);
-    console.log("optiondata:", optiondata);
-
-    init();
+       init();
     updateResult();
 
   } catch (err) {
