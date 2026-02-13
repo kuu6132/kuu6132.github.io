@@ -243,7 +243,7 @@
 .card-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;   /* 비율 유지하며 꽉 채움 */
+  object-fit: contain;   /* 비율 유지하며 꽉 채움 */
   display: block;
 }
 .result-card.excluded {
@@ -545,6 +545,7 @@ function isActive(value, selected) {
       if (excludedIds.has(id)) {
         excludedIds.delete(id);
         card.classList.remove("excluded");
+	updateResult();
       } else {
         excludedIds.add(id);
         card.classList.add("excluded");
