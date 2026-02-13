@@ -613,9 +613,27 @@ card.innerHTML = `
     📍 ${areaText}
   </div>
 `;
+if (excludedIds.has(id)) {
+  card.classList.add("excluded");
+}
 
+card.addEventListener("contextmenu", function (e) {
+  e.preventDefault();
 
-    resultEl.appendChild(card);
+  if (excludedIds.has(id)) {
+    excludedIds.delete(id);
+    card.classList.remove("excluded");
+  } else {
+    excludedIds.add(id);
+    card.classList.add("excluded");
+  }
+
+  localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
+});
+
+resultEl.appendChild(card);
+
+    
   });
 
   currentResult = result;
