@@ -394,6 +394,7 @@ const selected = {
 };
 
 async function loadData() {
+console.log(data);
   try {
     const res = await fetch("db.json?v=" + new Date().getTime());
     const data = await res.json();
