@@ -578,13 +578,26 @@ function updateResult() {
       ? baseUrl + encodeURIComponent(row["이름"]) + ".png"
       : "";
 
-    card.innerHTML = `
-      <div class="card-image"><img src="${imageUrl}"></div>
+     card.innerHTML = `
+      <div class="card-image"><img src="${imageUrl}.png"></div>
       <div class="card-header">
         <div class="card-title">${row["이름"]}</div>
         <div class="card-grade">${row["성급"]}</div>
       </div>
+      <div class="card-options">
+        <span class="option-tag ${isSelected(row["옵션1"]) ? "selected" : ""}">
+          ${row["옵션1"] ?? ""}
+        </span>
+        <span class="option-tag ${isSelected(row["옵션2"]) ? "selected" : ""}">
+          ${row["옵션2"] ?? ""}
+        </span>
+        <span class="option-tag ${isSelected(row["옵션3"]) ? "selected" : ""}">
+          ${row["옵션3"] ?? ""}
+        </span>
+      </div>
+      <div class="card-desc">${row["지역"] ?? ""}</div>
     `;
+
 
     resultEl.appendChild(card);
   });
