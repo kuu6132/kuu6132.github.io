@@ -33,7 +33,16 @@
       font-weight: 700;
       margin-bottom: 8px;
     }
-
+    .stats-summary {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #0a0a0a;
+  border: 1px solid #555;
+  border-radius: 8px;
+  color: #f1dc55;
+  font-size: 14px;
+  line-height: 1.5;
+}
     .options {
   display: flex;
   flex-wrap: wrap;
@@ -243,7 +252,7 @@
 .card-image img {
   width: 100%;
   height: 100%;
-  object-fit: ;   /* 비율 유지하며 꽉 채움 */
+  object-fit: contain;   /* 비율 유지하며 꽉 채움 */
   display: block;
 }
 .result-card.excluded {
@@ -274,7 +283,16 @@
   width: fit-content;
   gap: 15px;
 }
+.toggle-wrapper .data-btn {
+  background-color: #007bff; /* 파란색 배경 */
+  color: white;              /* 글자색 흰색 */
+  border: 1px solid #0056b3; /* 조금 더 진한 파란색 테두리 */
+}
 
+/* 마우스를 올렸을 때(Hover) 효과 */
+.toggle-wrapper .data-btn:hover {
+  background-color: #0056b3; /* 마우스 올리면 더 진하게 */
+}
 .toggle-text {
   font-size: 12px;
   color: #4dff88; /* 텍스트도 버튼 색상과 통일 */
@@ -348,12 +366,15 @@ input:checked + .toggle-slider:before {
     <div class="panel-header">
     <div class="panel-title">기초 옵션</div>
      <div class="toggle-wrapper">
+      <button class="data-btn" onclick="exportToJSON()">📥 저장하기</button>
+  <input type="file" id="importFile" style="display:none;" onchange="importFromJSON(event)" accept=".json">
+  <button class="data-btn" onclick="document.getElementById('importFile').click()">📤 불러오기</button>
         <button id="resetGray" onclick="clearExcluded()" class="btn reset">⟳ 파밍 초기화</button>
   <span class="toggle-text">파밍 완료</span>
   <label class="toggle-switch">
     <input type="checkbox" id="showExcluded">
     <span class="toggle-slider"></span>
-  </label>
+    </label>
 </div>
     
   </div>
@@ -375,7 +396,8 @@ input:checked + .toggle-slider:before {
   </div>
   <div class="panel">
   <div class="panel-title">무기</div>
-  <div id="result" class="result-list"></div>
+  <div id="stats-summary" class="stats-summary"></div>
+    <div id="result" class="result-list"></div>
 </div>
 </div>
 
@@ -395,31 +417,23 @@ const selected = {
 
 async function loadData() {
   try {
-    // 💡 GAS URL 대신 내 GitHub의 db.json 경로를 입력하세요.
-    // 예: "https://xn--v42bn6iovfo0a.github.io"
-    const jsonPath = "./db.json?v=" + new Date().getTime(); // 캐시 방지 포함
-    
-    const res = await fetch(jsonPath);
-    
-    if (!res.ok) throw new Error("네트워크 응답이 올바르지 않습니다.");
-    
+    const res = await fetch("https://script.google.com/macros/s/AKfycbyX7jhg84E-sji4QVrCzSFXDccLY4rCM51OK5oKNpUtOxtu510OesOTLqCLUtoIC__ijg/exec?v=" + new Date().getTime());
     const data = await res.json();
 
-    // 데이터 할당
     dbdata = data.db;
     optiondata = data.options;
 
-    console.log("GitHub 데이터 로드 완료:", data);
+    console.log("dbdata:", dbdata);
+    console.log("optiondata:", optiondata);
 
     init();
-    updateOptionAvailability(); // 초기 버튼 상태 계산 추가
     updateResult();
 
   } catch (err) {
-    console.error("데이터 로드 실패 (GitHub JSON):", err);
-    // 💡 실패 시 백업으로 GAS API를 호출하는 로직을 넣을 수도 있습니다.
+    console.error("데이터 로드 실패:", err);
   }
 }
+
 loadData();
 
 function init() {
@@ -466,10 +480,15 @@ function isActive(value, selected) {
   return value && value === selected ? 'style="background:#f1dc55;color:#000;border-color:#f1dc55"' : '';
 }
 
-  function updateResult() {
+function updateResult() {
   const resultEl = document.getElementById("result");
   resultEl.innerHTML = "";
-
+  const statsEl = document.getElementById("stats-summary")
+  statsEl.innerHTML = `
+  📊 추천 옵션<br>
+  옵션 현황: <strong>${'없음'}</strong><br>
+  최다 옵션: <strong>${'없음'}</strong>
+`;
   // 1. 선택 여부 확인
   const hasPrimary = selected.primary && selected.primary.length > 0;
   const isAnySelected = hasPrimary || !!selected.secondary || !!selected.skill || !!selected.area;
@@ -490,7 +509,7 @@ function isActive(value, selected) {
     // 🎯 viewMode = normal
     // =========================
     if (!isAnySelected) {
-            resultEl.innerHTML = `<div class="hint" >🔍  옵션이나 지역을 선택하면 무기가 표시됩니다.</div>`;
+            resultEl.innerHTML = `<div class="hint" >🔍 기초 옵션이나 지역을 선택하면 무기가 표시됩니다.</div>`;
       return;
     } else {
       result = dbdata.filter(row => {
@@ -518,9 +537,58 @@ function isActive(value, selected) {
         // 기초 옵션 조건과 기타 조건이 모두 맞아야 최종 표시
         return passPrimary && passOthers;
       });
+      // ==========================================
+  // 📊 1. 통계 계산 로직 추가
+  // ==========================================
+  const countPrimary = {};
+  const countSub = {};
+ // 1. 현재 선택된 옵션들을 하나의 집합으로 합치기 (제외용)
+  const mySelected = new Set();
+  
+  // Primary가 배열인 경우 (다중 선택)
+  if (Array.isArray(selected.primary)) {
+    selected.primary.forEach(v => mySelected.add(v.trim()));
+  }
+  // Secondary, Skill 등이 단일 문자열인 경우
+  ["secondary", "skill"].forEach(type => {
+    if (selected[type]) mySelected.add(selected[type].trim());
+  });
+  result.forEach(row => {
+    // 옵션1 통계
+    const p = row["옵션1"]?.toString().trim();
+    if (p) countPrimary[p] = (countPrimary[p] || 0) + 1;
+
+    // 옵션2, 옵션3 통합 통계 (중복 단어 1개 추출용)
+    const s2 = row["옵션2"]?.toString().trim();
+    const s3 = row["옵션3"]?.toString().trim();
+    if (s2 && !mySelected.has(s2)) {
+      countSub[s2] = (countSub[s2] || 0) + 1;
+    }
+    // s3가 존재하고, 내가 선택한 목록(mySelected)에 없을 때만 카운트
+    if (s3 && !mySelected.has(s3)) {
+      countSub[s3] = (countSub[s3] || 0) + 1;
+    }
+  });
+
+  // 빈도수 높은 순 정렬 (값 기준 내림차순)
+  const topPrimary = Object.entries(countPrimary)
+    .sort((a, b) => b[1] - a[1]) 
+    .slice(0, 3)
+
+  const topSub = Object.entries(countSub)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 1)
+  const primaryStrings = topPrimary.map(e => `${e[0]}(${e[1]})`);
+  const subStrings = topSub.map(e => `${e[0]}(${e[1]})`);
+  const statsEl = document.getElementById("stats-summary");
+  statsEl.innerHTML = `
+  📊 추천 옵션<br>
+  옵션 현황: <strong>${primaryStrings.join(', ') || '없음'}</strong><br>
+  최다 옵션: <strong>${subStrings[0] || '없음'}</strong>
+`;
     }
   }
-
+  
   // =========================
   // 카드 렌더링 내 하이라이트 함수 (isSelected)
   // =========================
@@ -534,7 +602,7 @@ function isActive(value, selected) {
       (selected.area && val === selected.area.trim())
     );
   }
-
+  
   result.forEach(row => {
     const card = document.createElement("div");
     const grade = row["성급"];
@@ -553,7 +621,8 @@ function isActive(value, selected) {
       if (excludedIds.has(id)) {
         excludedIds.delete(id);
         card.classList.remove("excluded");
-	updateResult();
+        updateResult();
+        console.log("파밍완료 제외시킬때")
       } else {
         excludedIds.add(id);
         card.classList.add("excluded");
@@ -561,7 +630,11 @@ function isActive(value, selected) {
       localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
       if (viewMode === "normal" && excludedIds.has(id)) {
         card.remove();
+        renderStats();
+        updateResult();
+        console.log("노멀일때")
       }
+      
     });
 
     const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
@@ -591,17 +664,32 @@ function isActive(value, selected) {
 
     resultEl.appendChild(card);
   });
-
-  currentResult = result;
+  currentResult = result; // result는 선택해서 나온 결과값
   updateOptionAvailability();
+ 
 }
+function renderStats() {
+      const statsEl = document.getElementById("stats-container");
+  if (!statsEl || !currentResult || currentResult.length === 0) {
+    if (statsEl) statsEl.innerHTML = "";
+    return;
+  }
 
+  const mySelected = new Set();
+
+  if (Array.isArray(selected.primary)) {
+    selected.primary.forEach(v => mySelected.add(v.trim()));
+  }
+
+  ["secondary", "skill", "area"].forEach(type => {
+    if (selected[type] && typeof selected[type] === "string") {
+      mySelected.add(selected[type].trim());
+    }})};
 function clearExcluded() {
   excludedIds.clear();
   localStorage.removeItem("excludedCards");
   updateResult();
 }
-
 function updateOptionAvailability() {
   const types = ["primary", "secondary", "skill", "area"];
 
@@ -684,7 +772,49 @@ function updateOptionAvailability() {
   // 아래 함수가 버튼의 disabled(비활성화)를 제어합니다.
   updateOptionAvailability(); 
 }
+function exportToJSON() {
+  const data = localStorage.getItem("excludedCards");
+  if (!data) {
+    alert("저장된 데이터가 없습니다.");
+    return;
+  }
 
+  // 1. 파일 내용 생성
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  // 2. 가상 링크 제작 및 클릭 (다운로드 실행)
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `excluded_backup_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+
+  // 3. 뒷정리
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importFromJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const content = e.target.result;
+      // 유효한 JSON인지 검증
+      JSON.parse(content); 
+      
+      // localStorage에 저장 및 화면 갱신
+      localStorage.setItem("excludedCards", content);
+      alert("데이터를 성공적으로 불러왔습니다!");
+      location.reload(); // 변경사항 반영을 위해 새로고침
+    } catch (err) {
+      alert("올바른 JSON 파일이 아닙니다.");
+    }
+  };
+  reader.readAsText(file);
+}
 </script>
 
 </body>
