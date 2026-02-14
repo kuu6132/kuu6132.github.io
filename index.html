@@ -356,10 +356,42 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 0 10px rgba(0, 255, 100, 0.3);
   transition: 0.3s;
 }
+.top-nav{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  margin-bottom:20px;
+}
+
+.nav-btn{
+  background:#1f2937;
+  border:1px solid #374151;
+  color:#cbd5e1;
+  padding:10px 18px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:14px;
+  transition:.2s;
+}
+
+.nav-btn:hover{
+  background:#2b3a55;
+  transform:translateY(-2px);
+}
+
+.nav-btn.active{
+  background:#3b82f6;
+  border:none;
+  color:white;
+  box-shadow:0 0 12px rgba(59,130,246,.5);
+}
   </style>
 </head>
 <body>
-
+<div class="top-nav">
+  <button class="nav-btn active" onclick="goPage('index')">🧮 기질 파밍</button>
+  <button class="nav-btn" onclick="goPage('daily')">📋 체크리스트</button>
+</div>
 <div class="container">
 
   <div class="panel">
@@ -369,7 +401,6 @@ input:checked + .toggle-slider:before {
       <button class="data-btn" onclick="exportToJSON()">📥 저장하기</button>
   <input type="file" id="importFile" style="display:none;" onchange="importFromJSON(event)" accept=".json">
   <button class="data-btn" onclick="document.getElementById('importFile').click()">📤 불러오기</button>
-        <button id="resetGray" onclick="clearExcluded()" class="btn reset">⟳ 파밍 초기화</button>
   <span class="toggle-text">파밍 완료</span>
   <label class="toggle-switch">
     <input type="checkbox" id="showExcluded">
@@ -407,13 +438,31 @@ let optiondata = {};
 let currentResult = [];
 let excludedIds = new Set(JSON.parse(localStorage.getItem("excludedCards") || "[]"));
 let viewMode = "normal";
-
+document.querySelectorAll(".nav-btn")[0].classList.add("active");
 const selected = {
   primary: [],
   secondary: null,
   skill: null,
   area: null
 };
+function goPage(page){
+
+  // GAS 웹앱인지 확인
+  if (location.hostname.includes("script.google.com")) {
+
+    // 현재 URL 유지하면서 page 파라미터만 교체
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', page);
+    window.location.replace(url.toString());
+
+  } else {
+
+    // GitHub Pages (정적 html 이동)
+    window.location.href = page + ".html";
+
+  }
+}
+
 
 async function loadData() {
   try {
@@ -685,11 +734,6 @@ function renderStats() {
     if (selected[type] && typeof selected[type] === "string") {
       mySelected.add(selected[type].trim());
     }})};
-function clearExcluded() {
-  excludedIds.clear();
-  localStorage.removeItem("excludedCards");
-  updateResult();
-}
 function updateOptionAvailability() {
   const types = ["primary", "secondary", "skill", "area"];
 
