@@ -485,8 +485,7 @@ async function loadData() {
 
     dbdata = data.db;
     optiondata = data.options;
-    console.log("dbdata:", dbdata);
-    console.log("optiondata:", optiondata);
+    
     init();
     setTimeout(updateResult, 0);
 
@@ -521,11 +520,7 @@ function init() {
 }
 
 function createButtons(type, list, single) {
-    console.log("createButtons:", type, list);
-    if (!Array.isArray(list)) {
-    console.error("❌ list is not array:", type, list);
-    return;
-  }
+    
   const wrap = document.getElementById(type);
   wrap.innerHTML = "";
   // 옵션 버튼들
@@ -545,11 +540,9 @@ function isActive(value, selected) {
 function updateResult() {
 
   const best = getBestFarmingArea();
-  console.log("추천지역 계산됨:", best);
-
- const remainweapon = getRemainingWeapons(); // ← 매번 새로 계산
- const total = dbdata.length;
- const cleared = total - remainweapon.length;
+  const remainweapon = getRemainingWeapons(); // ← 매번 새로 계산
+  const total = dbdata.length;
+  const cleared = total - remainweapon.length;
 
  let percent = 0;
  if (total > 0) {
@@ -560,8 +553,8 @@ function updateResult() {
   const statsEl = document.getElementById("stats-summary")
   statsEl.innerHTML = `
   📊 추천 옵션<br>
-  옵션 현황: <strong>${'없음'}</strong><br>
-  최다 옵션: <strong>${'없음'}</strong><br>
+  스탯 옵션: <strong>${'없음'}</strong><br>
+  스킬 옵션: <strong>${'없음'}</strong><br>
   추천 파밍지역:<strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
   무기 현황: <strong>${cleared} / ${total} (${percent}%)</strong>
   
@@ -669,23 +662,50 @@ function updateResult() {
   .sort((a, b) => b[1] - a[1]);
 
  const maxSubCount = sortedSub.length ? sortedSub[0][1] : 0;
-
- // 최고값과 같은 애들 전부 선택
+  // 최고값과 같은 애들 전부 선택
  const topSub = sortedSub.filter(e => e[1] === maxSubCount);
+ const topSubSet = new Set(topSub.map(e=>e[0]));
+ Object.keys(countPrimary).forEach(k=>delete countPrimary[k]);
 
+ result.forEach(row=>{
+
+  const hasTopSub =
+    parseOptions(row["옵션2"]).some(opt=>topSubSet.has(opt)) ||
+    parseOptions(row["옵션3"]).some(opt=>topSubSet.has(opt));
+
+  if(!hasTopSub) return;
+
+  // 여기부터 옵션1 카운트
+  parseOptions(row["옵션1"]).forEach(opt=>{
+    countPrimary[opt] = (countPrimary[opt]||0)+1;
+  });
+
+ });
  primaryStrings = topPrimary.map(e => `${e[0]}(${e[1]})`);
  subStrings = topSub.map(e => `${e[0]}(${e[1]})`);
   const statsEl = document.getElementById("stats-summary");
+ let optionText = "없음";
+ let topText = "없음";
 
+ if(selected.area){
+  const rec = getAreaOptionRecommendation(selected.area);
+
+  if(rec){
+    optionText = rec.top3
+  .map(opt => `${opt}(${rec.top3Count[opt]||0})`)
+  .join(', ');
+
+topText = `${rec.bestOption} (${rec.score}개)`;
+  }
+ }
   statsEl.innerHTML = `
   📊 추천 옵션<br>
-  옵션 현황: <strong>${primaryStrings.join(', ') || '없음'}</strong><br>
-  최다 옵션: <strong>${subStrings[0] || '없음'}</strong><br>
+  스탯 옵션: <strong>${optionText}</strong><br>
+  스킬 옵션: <strong>${topText}</strong><br>
   추천 파밍지역:<strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
   무기 현황: <strong>${cleared} / ${total} (${percent}%)</strong>
-  
- `;
- console.log(remainweapon);
+  `;
+ 
     }
   }
   
@@ -708,7 +728,7 @@ function updateResult() {
         excludedIds.delete(id);
         card.classList.remove("excluded");
         updateResult();
-        console.log("파밍완료 제외시킬때")
+        
       } else {
         excludedIds.add(id);
         card.classList.add("excluded");
@@ -880,6 +900,122 @@ function getBestFarmingArea(){
   });
 
   return bestArea ? {area:bestArea, count:bestScore} : null;
+}
+
+function getAreaOptionRecommendation(areaName){
+
+  const remaining = getRemainingWeapons();
+  const target = normalizeText(areaName);
+
+  // 1️⃣ 지역 무기만
+  const areaWeapons = remaining.filter(row=>{
+    if(!row["지역"]) return false;
+
+    const areas = String(row["지역"])
+      .split(',')
+      .map(a=>normalizeText(a));
+
+    return areas.includes(target);
+  });
+
+  if(areaWeapons.length === 0) return null;
+
+  /* ---------------------------------
+     2️⃣ 옵션2+3 통합 빈도 계산
+  --------------------------------- */
+
+  const subCount = {};
+
+  areaWeapons.forEach(row=>{
+    [...parseOptions(row["옵션2"]), ...parseOptions(row["옵션3"])]
+      .forEach(opt=>{
+        subCount[opt] = (subCount[opt]||0)+1;
+      });
+  });
+
+  // 최다 등장 횟수
+  const maxCount = Math.max(...Object.values(subCount));
+
+  // 동률 후보들
+  const candidates = Object.entries(subCount)
+    .filter(([opt,count])=>count===maxCount)
+    .map(e=>e[0]);
+
+  /* ---------------------------------
+     3️⃣ 후보별 실제 파밍 효율 계산
+  --------------------------------- */
+
+  let bestOption = null;
+  let bestScore = -1;
+  let bestTop3 = [];
+  let bestTop3Count = {};
+
+  candidates.forEach(option=>{
+
+    // 이 옵션 가진 무기만
+    const optionWeapons = areaWeapons.filter(row=>
+      parseOptions(row["옵션2"]).includes(option) ||
+      parseOptions(row["옵션3"]).includes(option)
+    );
+
+    // 옵션1 카운트
+    const primaryCount = {};
+
+    optionWeapons.forEach(row=>{
+      parseOptions(row["옵션1"]).forEach(opt=>{
+        primaryCount[opt]=(primaryCount[opt]||0)+1;
+      });
+    });
+
+    // 옵션1 TOP3
+    const top3 = Object.entries(primaryCount)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,3)
+      .map(e=>e[0]);
+
+    const top3Set = new Set(top3);
+
+    // 실제 파밍 효율 (핵심)
+    let score = 0;
+    const top3HitCount = {};
+
+  optionWeapons.forEach(row=>{
+
+  const opt1List = parseOptions(row["옵션1"]);
+
+  const hasTop3 =
+    opt1List.some(opt=>top3Set.has(opt));
+
+  if(hasTop3){
+
+    score++;
+
+    // ⭐ 어떤 옵션1이 실제 몇 번 등장했는지 기록
+    opt1List.forEach(opt=>{
+      if(top3Set.has(opt)){
+        top3HitCount[opt] = (top3HitCount[opt]||0)+1;
+      }
+    });
+
+  }
+  });
+
+    // 최고 선택
+    if(score > bestScore){
+  bestScore = score;
+  bestOption = option;
+  bestTop3 = top3;
+  bestTop3Count = top3HitCount;
+  }
+
+  });
+
+  return {
+    bestOption,
+    top3: bestTop3,
+    top3Count: bestTop3Count,
+  score: bestScore
+  };
 }
 
 function getRemainingWeapons(){
