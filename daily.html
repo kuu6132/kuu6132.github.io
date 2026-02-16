@@ -209,6 +209,10 @@ body{
   color:white;
   box-shadow:0 0 12px rgba(59,130,246,.5);
 }
+.excluded-group{
+  display:none !important;
+}
+
 </style>
 </head>
 
@@ -236,6 +240,7 @@ body{
   <div class="controls">
     <span class="btn" id="hideBtn">숨김 Off</span>
     <span class="btn" id="resetBtn">전체 해제</span>
+    <span class="btn" id="excludeViewBtn">제외 보기 OFF</span>
   </div>
 </div>
 
@@ -444,6 +449,10 @@ body{
 </div> 
 
 <script>
+
+  let showExcluded = false; // 화면 표시 상태 (보기용)
+  let excludedGroups = new Set(JSON.parse(localStorage.getItem("excludedGroups")||"[]"));
+
 function goPage(page){
 
   // GAS 웹앱인지 확인
@@ -470,8 +479,32 @@ document.getElementById("date").textContent =
     month: 'long',
     day: 'numeric',
     weekday: 'long' // "월요일"까지 표시
+});
+
+document.querySelectorAll(".group").forEach((group,i)=>{
+
+  const id = "group_" + i;
+  group.dataset.groupId = id;
+
+  // 우클릭 → 제외 토글
+  group.addEventListener("contextmenu", e=>{
+    e.preventDefault();
+
+    if(e.target.tagName === "INPUT") return;
+
+    if(excludedGroups.has(id)){
+      excludedGroups.delete(id);
+    }else{
+      excludedGroups.add(id);
+    }
+
+    localStorage.setItem("excludedGroups", JSON.stringify([...excludedGroups]));
+
+    applyExcludedVisibility();
+    updateAll();
   });
 
+});
 
 /* 상위 체크 → 하위 전체 체크 */
 document.querySelectorAll(".group-check").forEach(groupCheck=>{
@@ -506,6 +539,42 @@ document.addEventListener("change", e=>{
   updateAll();
   saveState();
 });
+
+const excludeViewBtn = document.getElementById("excludeViewBtn");
+
+excludeViewBtn.onclick = ()=>{
+  showExcluded = !showExcluded;
+
+  excludeViewBtn.textContent =
+    showExcluded ? "제외 보기 ON" : "제외 보기 OFF";
+
+  excludeViewBtn.classList.toggle("active");
+
+  applyExcludedVisibility();
+};
+
+function applyExcludedVisibility(){
+
+  document.querySelectorAll(".group").forEach(group=>{
+    const id = group.dataset.groupId;
+
+    if(excludedGroups.has(id)){
+      // 제외된 그룹
+      if(showExcluded){
+        group.style.display = "";      // 보기 ON → 보여줌
+        group.style.opacity = "0.35";  // 구분용 흐림
+      }else{
+        group.style.display = "none";  // 보기 OFF → 숨김
+      }
+    }else{
+      // 정상 그룹
+      group.style.display = "";
+      group.style.opacity = "1";
+    }
+  });
+
+}
+
 function saveState(){
   const states = [];
 
@@ -522,16 +591,23 @@ function updateAll(){
   let total = 0;
   let done = 0;
 
-
   document.querySelectorAll(".group").forEach(group=>{
+
+    const groupId = group.dataset.groupId;
+
+    // ★ 제외된 그룹은 퍼센트 계산에서 완전 제외
+    if(excludedGroups.has(groupId)){
+      group.querySelector(".group-count").textContent = "-/-";
+      group.classList.remove("done");
+      return;
+    }
+
     const tasks = group.querySelectorAll(".task");
     const checked = group.querySelectorAll(".task:checked");
 
-    // 그룹 카운트 표시
     group.querySelector(".group-count").textContent =
       `${checked.length}/${tasks.length}`;
-    const title = group.querySelector(".group-title");
-    // 🔥 여기 추가 (완료 그룹 판정)
+
     if(tasks.length === checked.length && tasks.length !== 0){
       group.classList.add("done");
     }else{
@@ -547,7 +623,6 @@ function updateAll(){
   document.getElementById("percent").textContent = percent+"%";
   document.getElementById("progressBar").style.width = percent+"%";
 }
-
 
 /* 아코디언 */
 document.querySelectorAll(".group-header").forEach(header=>{
@@ -617,7 +692,6 @@ function loadState(){
 
   updateAll();
 }
-
 loadState();
 
 </script>

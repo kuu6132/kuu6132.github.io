@@ -433,11 +433,15 @@ input:checked + .toggle-slider:before {
 </div>
 
 <script>
+
 let dbdata = [];
 let optiondata = {};
 let currentResult = [];
+let primaryStrings = [];
+let subStrings = [];
 let excludedIds = new Set(JSON.parse(localStorage.getItem("excludedCards") || "[]"));
 let viewMode = "normal";
+
 document.querySelectorAll(".nav-btn")[0].classList.add("active");
 const selected = {
   primary: [],
@@ -445,6 +449,17 @@ const selected = {
   skill: null,
   area: null
 };
+
+function parseOptions(field){
+  if(!field) return [];
+
+  return field
+    .toString()
+    .split(/[,/|]/)
+    .map(v=>normalizeText(v))
+    .filter(v=>v.length>0);
+}
+
 function goPage(page){
 
   // GAS 웹앱인지 확인
@@ -463,7 +478,6 @@ function goPage(page){
   }
 }
 
-
 async function loadData() {
   try {
     const res = await fetch("https://script.google.com/macros/s/AKfycbyX7jhg84E-sji4QVrCzSFXDccLY4rCM51OK5oKNpUtOxtu510OesOTLqCLUtoIC__ijg/exec?v=" + new Date().getTime());
@@ -471,12 +485,10 @@ async function loadData() {
 
     dbdata = data.db;
     optiondata = data.options;
-
     console.log("dbdata:", dbdata);
     console.log("optiondata:", optiondata);
-
     init();
-    updateResult();
+    setTimeout(updateResult, 0);
 
   } catch (err) {
     console.error("데이터 로드 실패:", err);
@@ -501,13 +513,14 @@ function init() {
     }
     updateResult();
     updateOptionAvailability();
+    getRemainingWeapons();
   });
 
   // ⭐ 이 줄 추가
   //updateResult();
 }
 
-  function createButtons(type, list, single) {
+function createButtons(type, list, single) {
     console.log("createButtons:", type, list);
     if (!Array.isArray(list)) {
     console.error("❌ list is not array:", type, list);
@@ -530,14 +543,29 @@ function isActive(value, selected) {
 }
 
 function updateResult() {
+
+  const best = getBestFarmingArea();
+  console.log("추천지역 계산됨:", best);
+
+ const remainweapon = getRemainingWeapons(); // ← 매번 새로 계산
+ const total = dbdata.length;
+ const cleared = total - remainweapon.length;
+
+ let percent = 0;
+ if (total > 0) {
+  percent = Math.floor(cleared / total * 100);
+ }
   const resultEl = document.getElementById("result");
   resultEl.innerHTML = "";
   const statsEl = document.getElementById("stats-summary")
   statsEl.innerHTML = `
   📊 추천 옵션<br>
   옵션 현황: <strong>${'없음'}</strong><br>
-  최다 옵션: <strong>${'없음'}</strong>
-`;
+  최다 옵션: <strong>${'없음'}</strong><br>
+  추천 파밍지역:<strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
+  무기 현황: <strong>${cleared} / ${total} (${percent}%)</strong>
+  
+ `;
   // 1. 선택 여부 확인
   const hasPrimary = selected.primary && selected.primary.length > 0;
   const isAnySelected = hasPrimary || !!selected.secondary || !!selected.skill || !!selected.area;
@@ -565,7 +593,11 @@ function updateResult() {
         // 🔥 excluded 숨김
         if (excludedIds.has(row["이름"])) return false;
 
-        const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean).map(v => v.trim());
+        const rowOpts = [
+        ...parseOptions(row["옵션1"]),
+        ...parseOptions(row["옵션2"]),
+        ...parseOptions(row["옵션3"])
+        ];
 
         // A. Primary 검사: 선택된 기초 옵션 중 하나라도 있으면 통과 (OR)
         const passPrimary = !hasPrimary || selected.primary.some(sel => rowOpts.includes(sel.trim()));
@@ -604,52 +636,57 @@ function updateResult() {
   });
   result.forEach(row => {
     // 옵션1 통계
-    const p = row["옵션1"]?.toString().trim();
-    if (p) countPrimary[p] = (countPrimary[p] || 0) + 1;
-
+    parseOptions(row["옵션1"]).forEach(opt=>{
+  countPrimary[opt] = (countPrimary[opt] || 0) + 1;
+ });
+    
     // 옵션2, 옵션3 통합 통계 (중복 단어 1개 추출용)
-    const s2 = row["옵션2"]?.toString().trim();
-    const s3 = row["옵션3"]?.toString().trim();
-    if (s2 && !mySelected.has(s2)) {
-      countSub[s2] = (countSub[s2] || 0) + 1;
+    [...parseOptions(row["옵션2"]), ...parseOptions(row["옵션3"])]
+  .forEach(opt=>{
+    if(!mySelected.has(opt)){
+      countSub[opt] = (countSub[opt] || 0) + 1;
     }
-    // s3가 존재하고, 내가 선택한 목록(mySelected)에 없을 때만 카운트
-    if (s3 && !mySelected.has(s3)) {
-      countSub[s3] = (countSub[s3] || 0) + 1;
-    }
+  });
   });
 
   // 빈도수 높은 순 정렬 (값 기준 내림차순)
-  const topPrimary = Object.entries(countPrimary)
-    .sort((a, b) => b[1] - a[1]) 
-    .slice(0, 3)
+  const sortedPrimary = Object.entries(countPrimary)
+  .sort((a, b) => b[1] - a[1]);
 
-  const topSub = Object.entries(countSub)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 1)
-  const primaryStrings = topPrimary.map(e => `${e[0]}(${e[1]})`);
-  const subStrings = topSub.map(e => `${e[0]}(${e[1]})`);
+ let topPrimary = [];
+
+ if(sortedPrimary.length){
+
+  // 3위 점수(컷라인)
+  const cutoffIndex = Math.min(2, sortedPrimary.length - 1);
+  const cutoffScore = sortedPrimary[cutoffIndex][1];
+
+  // 컷라인 이상 전부 포함
+  topPrimary = sortedPrimary.filter(e => e[1] >= cutoffScore);
+ }
+
+  const sortedSub = Object.entries(countSub)
+  .sort((a, b) => b[1] - a[1]);
+
+ const maxSubCount = sortedSub.length ? sortedSub[0][1] : 0;
+
+ // 최고값과 같은 애들 전부 선택
+ const topSub = sortedSub.filter(e => e[1] === maxSubCount);
+
+ primaryStrings = topPrimary.map(e => `${e[0]}(${e[1]})`);
+ subStrings = topSub.map(e => `${e[0]}(${e[1]})`);
   const statsEl = document.getElementById("stats-summary");
+
   statsEl.innerHTML = `
   📊 추천 옵션<br>
   옵션 현황: <strong>${primaryStrings.join(', ') || '없음'}</strong><br>
-  최다 옵션: <strong>${subStrings[0] || '없음'}</strong>
-`;
-    }
-  }
+  최다 옵션: <strong>${subStrings[0] || '없음'}</strong><br>
+  추천 파밍지역:<strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
+  무기 현황: <strong>${cleared} / ${total} (${percent}%)</strong>
   
-  // =========================
-  // 카드 렌더링 내 하이라이트 함수 (isSelected)
-  // =========================
-  function isSelected(optionValue) {
-    if (!optionValue) return false;
-    const val = optionValue.trim();
-    return (
-      (selected.primary && selected.primary.includes(val)) || // 배열에 포함되는지 확인
-      val === selected.secondary ||
-      val === selected.skill ||
-      (selected.area && val === selected.area.trim())
-    );
+ `;
+ console.log(remainweapon);
+    }
   }
   
   result.forEach(row => {
@@ -681,7 +718,6 @@ function updateResult() {
         card.remove();
         renderStats();
         updateResult();
-        console.log("노멀일때")
       }
       
     });
@@ -715,8 +751,141 @@ function updateResult() {
   });
   currentResult = result; // result는 선택해서 나온 결과값
   updateOptionAvailability();
- 
 }
+
+function isSelected(optionValue) {
+    if (!optionValue) return false;
+    const val = optionValue.trim();
+    return (
+      (selected.primary && selected.primary.includes(val)) || // 배열에 포함되는지 확인
+      val === selected.secondary ||
+      val === selected.skill ||
+      (selected.area && val === selected.area.trim())
+    );
+}
+
+function calculateAreaScore(areaName){
+
+  const remaining = getRemainingWeapons(); // 파밍 안한 무기
+  const target = normalizeText(areaName);
+
+  /* 1️⃣ 해당 지역 무기만 추출 */
+  const areaWeapons = remaining.filter(row=>{
+    if(!row["지역"]) return false;
+
+    const areas = String(row["지역"])
+      .replace(/\u00A0/g,' ')
+      .split(',')
+      .map(a=>normalizeText(a));
+
+    return areas.includes(target);
+  });
+
+  if(areaWeapons.length === 0) return 0;
+
+
+  /* 2️⃣ 지역 내부에서 옵션2+3 최다옵션 찾기 */
+  const subCount = {};
+
+  areaWeapons.forEach(row=>{
+    [...parseOptions(row["옵션2"]), ...parseOptions(row["옵션3"])]
+      .forEach(opt=>{
+        subCount[opt] = (subCount[opt] || 0) + 1;
+      });
+  });
+
+  const sortedSub = Object.entries(subCount)
+    .sort((a,b)=>b[1]-a[1]);
+
+  if(!sortedSub.length) return 0;
+
+  const topSub = sortedSub[0][0];
+
+
+  /* 3️⃣ 그 최다옵션을 가진 무기만 남김 */
+  const filteredWeapons = areaWeapons.filter(row=>
+    parseOptions(row["옵션2"]).includes(topSub) ||
+    parseOptions(row["옵션3"]).includes(topSub)
+  );
+
+
+  /* 4️⃣ 그 무기들 기준 옵션1 TOP3 계산 */
+  const primaryCount = {};
+
+  filteredWeapons.forEach(row=>{
+    parseOptions(row["옵션1"]).forEach(opt=>{
+      primaryCount[opt] = (primaryCount[opt] || 0) + 1;
+    });
+  });
+
+  const topPrimary = Object.entries(primaryCount)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,3)
+    .map(e=>e[0]);
+
+  const topPrimarySet = new Set(topPrimary);
+
+
+  /* 5️⃣ TOP3 옵션을 가진 무기 개수 */
+  let score = 0;
+
+  filteredWeapons.forEach(row=>{
+    const hasPrimary =
+      parseOptions(row["옵션1"])
+        .some(opt => topPrimarySet.has(opt));
+
+    if(hasPrimary) score++;
+  });
+
+  return score;
+}
+
+function normalizeAreaName(name){
+  if(!name) return "";
+
+  name = normalizeText(name);
+
+  // 모든 공백 제거 후 비교
+  const key = name.replace(/\s/g,'');
+
+  if(key.includes("거점")) return "거점 지역";
+  if(key.includes("연구")) return "오리지늄 연구 구역";
+  if(key.includes("광맥")) return "광맥 구역";
+  if(key.includes("에너지")) return "에너지 공급 고지";
+  if(key.includes("무릉")) return "무릉성";
+
+  return name;
+}
+
+function getBestFarmingArea(){
+
+  const areas = [
+    "거점 지역",
+    "오리지늄 연구 구역",
+    "광맥 구역",
+    "에너지 공급 고지",
+    "무릉성"
+  ];
+
+  let bestArea = null;
+  let bestScore = 0;
+
+  areas.forEach(area=>{
+    const score = calculateAreaScore(area);
+
+    if(score > bestScore){
+      bestArea = area;
+      bestScore = score;
+    }
+  });
+
+  return bestArea ? {area:bestArea, count:bestScore} : null;
+}
+
+function getRemainingWeapons(){
+  return dbdata.filter(row => !excludedIds.has(row["이름"]));
+}
+
 function renderStats() {
       const statsEl = document.getElementById("stats-container");
   if (!statsEl || !currentResult || currentResult.length === 0) {
@@ -733,7 +902,24 @@ function renderStats() {
   ["secondary", "skill", "area"].forEach(type => {
     if (selected[type] && typeof selected[type] === "string") {
       mySelected.add(selected[type].trim());
-    }})};
+    }})
+};
+
+function normalizeText(str){
+  if(!str) return "";
+
+  return str
+    .toString()
+    // 모든 특수 공백 제거
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')  // zero width
+    .replace(/\u00A0/g,' ')                 // NBSP
+    .replace(/\u2007/g,' ')
+    .replace(/\u202F/g,' ')
+    // 일반 공백 정리
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
 function updateOptionAvailability() {
   const types = ["primary", "secondary", "skill", "area"];
 
@@ -764,8 +950,14 @@ function updateOptionAvailability() {
           const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean).map(v => v.trim());
 
           if (t === "area") {
-            return row["지역"] && row["지역"].includes(sel);
-          }
+  if(!row["지역"]) return false;
+
+  const areas = String(row["지역"])
+    .split(',')
+    .map(a=>normalizeText(a));
+
+  return areas.includes(normalizeText(sel));
+  }
 
           // 🔥 수정 포인트: Primary(배열)는 하나라도 포함되면(some) 활성화 유지
           if (Array.isArray(sel)) {
@@ -779,7 +971,7 @@ function updateOptionAvailability() {
   });
 }
 
- function clearType(type) {
+function clearType(type) {
   if (type === "primary") {
     selected[type] = [];
   } else {
@@ -789,7 +981,7 @@ function updateOptionAvailability() {
     .forEach(b => b.classList.remove("active"));
 }
 
- function toggle(type, value, btn) {
+function toggle(type, value, btn) {
   if (type === "primary") {
     // 🔥 Primary: 다중 선택 로직
     const index = selected.primary.indexOf(value);
@@ -816,6 +1008,7 @@ function updateOptionAvailability() {
   // 아래 함수가 버튼의 disabled(비활성화)를 제어합니다.
   updateOptionAvailability(); 
 }
+
 function exportToJSON() {
   const data = localStorage.getItem("excludedCards");
   if (!data) {
@@ -838,6 +1031,7 @@ function exportToJSON() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
 function importFromJSON(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -859,6 +1053,7 @@ function importFromJSON(event) {
   };
   reader.readAsText(file);
 }
+
 </script>
 
 </body>
