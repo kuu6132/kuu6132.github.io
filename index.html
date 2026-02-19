@@ -480,7 +480,7 @@ function goPage(page){
 
 async function loadData() {
   try {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbyX7jhg84E-sji4QVrCzSFXDccLY4rCM51OK5oKNpUtOxtu510OesOTLqCLUtoIC__ijg/exec?v=" + new Date().getTime());
+    const res = await fetch("https://kuu6132.github.io/db.json");
     const data = await res.json();
 
     dbdata = data.db;
