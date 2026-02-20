@@ -3,14 +3,13 @@
 <head>
   <base target="_top">
   <style>
-    body {
-      margin: 0;
-      background: #0b0b0b;
-      background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
-      background-size: 6px 6px;
-      color: #cfcfcf;
-      font-family: Arial, "Segoe UI", sans-serif;
-    }
+    body{
+  margin:0;
+  background: radial-gradient(circle at 50% 20%, #0f172a, #020617 70%);
+  font-family: "Segoe UI", Arial, sans-serif;
+  color:#e5e7eb;
+  padding-top:80px; /* ⭐ 헤더 높이만큼 밀어줌 (필수) */
+}
 
     .container {
   max-width: 1200px;
@@ -21,17 +20,18 @@
 }
 
     .panel {
-      border: 1px solid #6b6430;
-      background: linear-gradient(#141414, #0c0c0c);
       padding: 10px 12px 12px;
       margin-bottom: 14px;
+      background:rgba(25,35,60,0.6);
+      border-radius:18px;
+      padding:25px;
+      box-shadow:0 0 25px rgba(0,0,0,.4);
     }
 
     .panel-title {
-      color: #f1dc55;
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 8px;
+  margin-bottom:10px;
+  color:#34d399;
+  font-weight:bold;
     }
     .stats-summary {
   margin-bottom: 16px;
@@ -39,7 +39,7 @@
   background: #0a0a0a;
   border: 1px solid #555;
   border-radius: 8px;
-  color: #f1dc55;
+  color: white;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -48,12 +48,14 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* 기본 버튼 */
 .btn {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid #d1c45c;
-  background: linear-gradient(135deg, #f1dc55, #e0c24f);
-  color: #000;
+  border: 1px solid #1f6f78;
+  background: linear-gradient(135deg, #0f2a2a, #0b1f1f);
+  color: white;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -63,8 +65,8 @@
 
 /* hover */
 .btn:hover {
-  background: linear-gradient(135deg, #fff3a3, #f1d35c);
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+  background: linear-gradient(135deg, #123838, #0f2a2a);
+  box-shadow: 0 0 10px rgba(0, 255, 220, 0.35);
   transform: translateY(-1px);
 }
 
@@ -74,55 +76,25 @@
   box-shadow: none;
 }
 
-/* 선택 상태 */
+/* 선택 상태 (핵심) */
 .btn.active {
-  background: #88FF88;
-  border-color: #88FF88;
-  color: #000;
-  box-shadow: 0 0 8px rgba(136, 255, 136, 0.6);
+  background: linear-gradient(135deg, #1fbfb8, #119e97);
+  border-color: #37fff0;
+  color: #001a18;
+  box-shadow: 0 0 14px rgba(0, 255, 220, 0.65);
 }
 
 /* 비활성 */
 .btn.disabled {
-  opacity: 0.25;
+  opacity: 0.28;
   pointer-events: none;
-  border-color: #444;
-  color: #555;
-  background: #222;
+  border-color: #2a2a2a;
+  color: #4b4b4b;
+  background: #111;
   box-shadow: none;
   transform: none;
 }
-
-/* 초기화 버튼만 살짝 다르게 */
-.btn.reset {
-  font-size: 12px;
-  padding: 5px 10px;
-  background: linear-gradient(135deg, #ff4d4d, #b30000);
-  border-color: #ff4d4d;
-  color: #000;
-}
-
-/* hover */
-.btn.reset:hover {
-  background: linear-gradient(135deg, #ff6666, #cc0000);
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
-}
-.btn.ok { 
-  font-size: 12px;
-  padding: 5px 10px;
-  background: linear-gradient(135deg, #4dff88, #00b33c);
-  border-color: #00cc44;
-  color: #003300;
-}
-.btn.ok:hover {
-  background: linear-gradient(135deg, #66ffaa, #00cc44);
-  box-shadow: 0 0 10px rgba(0, 255, 100, 0.6);
-}
-/* active */
-.btn.reset:active {
-  background: linear-gradient(135deg, #cc0000, #800000);
-}
-    
+   
     /* 결과 카드 래퍼 */
 .result-grid {
   display: grid;
@@ -255,11 +227,36 @@
   object-fit: contain;   /* 비율 유지하며 꽉 채움 */
   display: block;
 }
-.result-card.excluded {
+/**.result-card.excluded {
   filter: grayscale(100%);
   opacity: 0.35;
   transform: scale(0.97);
   transition: 0.2s;
+} **/
+
+/* 파밍 완료 표시 (우클릭) */
+.result-card.excluded{
+  border: 2px solid #00ff88;
+  box-shadow:
+    0 0 8px rgba(0,255,120,0.6),
+    0 0 18px rgba(0,255,120,0.35),
+    inset 0 0 10px rgba(0,255,120,0.15);
+  position: relative;
+}
+
+/* 좌상단 체크 표시 */
+.result-card.excluded::after{
+  content: "✔ 완료";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #00ff88;
+  color: #002b16;
+  box-shadow: 0 0 6px rgba(0,255,120,0.8);
 }
 
 .panel-header {
@@ -277,27 +274,29 @@
   align-items: center;
   justify-content: space-between;
   padding: 5px 12px;
-  background: rgba(0, 0, 0, 0.2); /* 배경에 살짝 음영 */
   border-radius: 8px;
-  border: 1px solid #00cc44;
+  border: 1px solid #00cc44 none;
   width: fit-content;
   gap: 15px;
 }
-.toggle-wrapper .data-btn {
-  background-color: #007bff; /* 파란색 배경 */
-  color: white;              /* 글자색 흰색 */
-  border: 1px solid #0056b3; /* 조금 더 진한 파란색 테두리 */
+
+.data-btn{
+  display:inline-block;
+  padding:6px 14px;
+  border-radius:20px;
+  background:#1f2937;
+  border:1px solid #374151;
+  color: white;
+  cursor:pointer;
+  transition:.2s;
+  margin-right:8px;
 }
 
-/* 마우스를 올렸을 때(Hover) 효과 */
-.toggle-wrapper .data-btn:hover {
-  background-color: #0056b3; /* 마우스 올리면 더 진하게 */
+.data-btn:hover{
+  background:#2c3b55;
+  transform:translateY(-2px);
 }
-.toggle-text {
-  font-size: 12px;
-  color: #4dff88; /* 텍스트도 버튼 색상과 통일 */
-  font-weight: bold;
-}
+
 
 /* 스위치 본체 */
 .toggle-switch {
@@ -314,98 +313,92 @@
   height: 0;
 }
 
-/* 슬라이더 배경 (OFF 상태) */
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: #333; /* 꺼졌을 때는 어둡게 */
-  transition: .3s;
-  border-radius: 22px;
-  border: 1px solid #444;
-}
+.top-header{
+  position:fixed;        /* ⭐ 핵심 (고정) */
+  top:0;
+  left:0;
+  width:100%;
+  height:72px;
+  z-index:9999;          /* 카드 위에 항상 보이게 */
 
-/* 슬라이더 내부 원 */
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 3px;
-  bottom: 2px;
-  background: #bbb;
-  transition: .3s;
-  border-radius: 50%;
-}
-
-/* 🟢 체크되었을 때 (ON 상태) - .btn.ok 스타일 적용 */
-input:checked + .toggle-slider {
-  background: linear-gradient(135deg, #4dff88, #00b33c);
-  border-color: #00cc44;
-  box-shadow: 0 0 10px rgba(0, 255, 100, 0.4);
-}
-
-input:checked + .toggle-slider:before {
-  transform: translateX(20px);
-  background: #fff; /* ON일 때 원을 하얗게 강조 */
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-}
-
-/* 호버 효과 */
-.toggle-wrapper:hover {
-  box-shadow: 0 0 10px rgba(0, 255, 100, 0.3);
-  transition: 0.3s;
-}
-.top-nav{
   display:flex;
-  gap:12px;
+  align-items:center;
   justify-content:center;
-  margin-bottom:20px;
+
+  background:linear-gradient(to bottom, rgba(2,6,23,.98), rgba(2,6,23,.65));
+  border-bottom:1px solid rgba(96,165,250,.25);
+  box-shadow:0 6px 35px rgba(0,0,0,.8);
+  backdrop-filter: blur(8px); /* ⭐ 유리 느낌 */
 }
 
-.nav-btn{
-  background:#1f2937;
-  border:1px solid #374151;
-  color:#cbd5e1;
-  padding:10px 18px;
-  border-radius:12px;
-  cursor:pointer;
+.top-header.scrolled{
+  background:linear-gradient(to bottom, rgba(2,6,23,1), rgba(2,6,23,.85));
+  box-shadow:0 8px 40px rgba(0,0,0,1);
+}
+
+/* 중앙 타이틀 */
+.top-header .title{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:2px;
+  color:#93c5fd;
+  text-shadow:
+    0 0 10px rgba(96,165,250,.8),
+    0 0 25px rgba(37,99,235,.6);
+}
+
+.back-btn{
+  left:18px;
+  top:50%;
+  transform:translateY(-50%);
+  padding:8px 14px;
+  border-radius:10px;
+  border:1px solid rgba(96,165,250,.5);
+  background:rgba(30,41,59,.55);
+  color:#bfdbfe;
   font-size:14px;
+  font-weight:600;
+  cursor:pointer;
   transition:.2s;
+  backdrop-filter: blur(6px);
 }
 
-.nav-btn:hover{
-  background:#2b3a55;
-  transform:translateY(-2px);
-}
-
-.nav-btn.active{
+/* hover 효과 */
+.back-btn:hover{
   background:#3b82f6;
-  border:none;
   color:white;
-  box-shadow:0 0 12px rgba(59,130,246,.5);
+  border-color:#60a5fa;
+  box-shadow:0 0 12px rgba(96,165,250,.8);
+  transform:translateY(-50%) scale(1.05);
+}
+
+/* 클릭 */
+.back-btn.active{
+  background:#3b82f6;
+  color:white;
+  border-color:#60a5fa;
+  box-shadow:0 0 12px rgba(96,165,250,.9);
+    transform:translateY(-50%) scale(.96);
 }
   </style>
 </head>
 <body>
-<div class="top-nav">
-  <button class="nav-btn active" onclick="goPage('index')">🧮 기질 파밍</button>
-  <button class="nav-btn" onclick="goPage('daily')">📋 체크리스트</button>
+<div class="top-header">
+  <button class="back-btn" onclick="goPage('index')">🧮 기질 파밍</button>
+  <button class="back-btn" onclick="goPage('daily')">📋 체크리스트</button>
 </div>
 <div class="container">
 
   <div class="panel">
     <div class="panel-header">
-    <div class="panel-title">기초 옵션</div>
+    <div class="panel-title">● 기초 옵션</div>
      <div class="toggle-wrapper">
       <button class="data-btn" onclick="exportToJSON()">📥 저장하기</button>
   <input type="file" id="importFile" style="display:none;" onchange="importFromJSON(event)" accept=".json">
   <button class="data-btn" onclick="document.getElementById('importFile').click()">📤 불러오기</button>
-  <span class="toggle-text">파밍 완료</span>
-  <label class="toggle-switch">
-    <input type="checkbox" id="showExcluded">
-    <span class="toggle-slider"></span>
-    </label>
+  <button class="data-btn" onclick="goPage('inventory')">📚 무기 도감</button>
+ 
+  
 </div>
     
   </div>
@@ -413,26 +406,27 @@ input:checked + .toggle-slider:before {
   </div>
 
   <div class="panel">
-    <div class="panel-title">추가 옵션</div>
+    <div class="panel-title">● 추가 옵션</div>
     <div class="options" id="secondary"></div>
   </div>
 
   <div class="panel">
-    <div class="panel-title">스킬 옵션</div>
+    <div class="panel-title">● 스킬 옵션</div>
     <div class="options" id="skill"></div>
   </div>
   <div class="panel">
-    <div class="panel-title">지역</div>
+    <div class="panel-title">● 지역</div>
     <div class="options" id="area"></div>
   </div>
   <div class="panel">
-  <div class="panel-title">무기</div>
+  <div class="panel-title">● 무기</div>
   <div id="stats-summary" class="stats-summary"></div>
     <div id="result" class="result-list"></div>
 </div>
 </div>
 
 <script>
+
 
 let dbdata = [];
 let optiondata = {};
@@ -442,7 +436,6 @@ let subStrings = [];
 let excludedIds = new Set(JSON.parse(localStorage.getItem("excludedCards") || "[]"));
 let viewMode = "normal";
 
-document.querySelectorAll(".nav-btn")[0].classList.add("active");
 const selected = {
   primary: [],
   secondary: null,
@@ -502,21 +495,6 @@ function init() {
   createButtons("skill", optiondata.skill, true);
   createButtons("area", optiondata.area, true);
 
-  const toggleBtn = document.getElementById("showExcluded");
-
-  toggleBtn.addEventListener("change", function () {
-    if (this.checked) {
-      viewMode = "excluded";
-    } else {
-      viewMode = "normal";
-    }
-    updateResult();
-    updateOptionAvailability();
-    getRemainingWeapons();
-  });
-
-  // ⭐ 이 줄 추가
-  //updateResult();
 }
 
 function createButtons(type, list, single) {
@@ -565,16 +543,7 @@ function updateResult() {
 
   let result = [];
   
-  // =========================
-  // 📦 획득만 보기 모드
-  // =========================
-  if (viewMode === "excluded") {
-    result = dbdata.filter(row => excludedIds.has(row["이름"]));
-    if (result.length === 0) {
-      resultEl.innerHTML = `<div class="hint">파밍 완료한 무기 없음</div>`;
-      return;
-    }
-  } else {
+   {
     // =========================
     // 🎯 viewMode = normal
     // =========================
@@ -734,12 +703,11 @@ topText = `${rec.bestOption} (${rec.score}개)`;
         card.classList.add("excluded");
       }
       localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
-      if (viewMode === "normal" && excludedIds.has(id)) {
+      
         card.remove();
         renderStats();
         updateResult();
-      }
-      
+            
     });
 
     const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
@@ -1189,6 +1157,51 @@ function importFromJSON(event) {
   };
   reader.readAsText(file);
 }
+
+window.addEventListener("scroll", () => {
+  const header = document.querySelector(".top-header");
+
+  if(window.scrollY > 10){
+    header.classList.add("scrolled");
+  }else{
+    header.classList.remove("scrolled");
+  }
+});
+
+function setActiveTab(){
+
+  let currentPage = "index";
+
+  // 1️⃣ GAS : ?page=
+  const params = new URLSearchParams(window.location.search);
+  const paramPage = params.get("page");
+
+  if(paramPage){
+    currentPage = paramPage;
+  }
+  else{
+    // 2️⃣ GitHub Pages 파일명 판별
+    const href = location.href.toLowerCase();
+
+    if(href.includes("daily")) currentPage = "daily";
+    else  currentPage = "index";
+  }
+
+  // 버튼 active 적용
+  document.querySelectorAll(".back-btn").forEach(btn=>{
+    btn.classList.remove("active");
+
+    const onclick = btn.getAttribute("onclick");
+    if(!onclick) return;
+
+    if(onclick.includes(currentPage)){
+      btn.classList.add("active");
+    }
+  });
+}
+
+/* GAS 대응 + 일반웹 대응 */
+document.addEventListener("DOMContentLoaded", setActiveTab);
 
 </script>
 

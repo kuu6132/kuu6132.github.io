@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>무기 도감</title>
+
+<style>
+body{
+  margin:0;
+  background: radial-gradient(circle at 50% 20%, #0f172a, #020617 70%);
+  font-family: "Segoe UI", Arial, sans-serif;
+  color:#e5e7eb;
+  padding-top:80px; /* ⭐ 헤더 높이만큼 밀어줌 (필수) */
+}
+
+.header{
+  text-align:center;
+  padding:20px 0;
+  font-size:26px;
+  font-weight:700;
+  color:#60a5fa;
+}
+
+.grid{
+  width:1200px;
+  max-width:95%;
+  margin:20px auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+  gap:16px;
+}
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid #00cc44 none;
+  width: fit-content;
+  gap: 15px;
+}
+
+.data-btn  {
+  background-color: #007bff; /* 파란색 배경 */
+  color: white;              /* 글자색 흰색 */
+  border: 1px solid #0056b3; /* 조금 더 진한 파란색 테두리 */
+}
+
+.data-btn:hover {
+  background-color: #0056b3; /* 마우스 올리면 더 진하게 */
+}
+
+.card{
+  width:160px;
+  background:#111;   /* 기본 어둠 */
+  border-radius:10px;
+  padding:10px;
+  box-sizing:border-box;
+  cursor:pointer;
+  transition:.18s;
+  position:relative;
+  overflow:hidden;
+}
+.card.grade6::before{
+  background:
+    radial-gradient(circle at 50% 120%, rgba(255,40,40,.45), transparent 60%),
+    radial-gradient(circle at 50% -20%, rgba(255,0,0,.25), transparent 60%);
+}
+
+.card.grade5::before{
+  background:
+    radial-gradient(circle at 50% 120%, rgba(255,200,40,.45), transparent 60%),
+    radial-gradient(circle at 50% -20%, rgba(255,215,0,.25), transparent 60%);
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.18;
+  pointer-events:none;
+  transition:.2s;
+}
+
+.card:hover{
+  transform:translateY(-4px) scale(1.03);
+  border-color:#60a5fa;
+  box-shadow:0 0 18px rgba(96,165,250,.45);
+}
+
+.card-img{
+  width:100%;
+  height:110px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.card-img img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+
+.card-name{
+  text-align:center;
+  margin-top:8px;
+  font-size:13px;
+  font-weight:600;
+}
+/* 획득 상태 (우클릭) */
+.card.done{
+  border-color:#22c55e !important;
+
+  /* 녹색 광채 */
+  box-shadow:
+    0 0 14px rgba(34,197,94,.8),
+    0 0 28px rgba(34,197,94,.45),
+    inset 0 0 18px rgba(34,197,94,.25);
+
+  background:
+    radial-gradient(circle at 50% 120%, rgba(34,197,94,.25), transparent 65%),
+    radial-gradient(circle at 50% -30%, rgba(34,197,94,.18), transparent 60%),
+    #0f1f14;
+}
+
+/* 획득 라벨 */
+.card.done::after{
+  content:"획득";
+  position:absolute;
+  top:8px;
+  right:8px;
+  font-size:12px;
+  background:#22c55e;
+  color:#022c16;
+  padding:4px 7px;
+  border-radius:7px;
+  font-weight:700;
+  box-shadow:0 0 8px rgba(34,197,94,.7);
+}
+
+.card.done::after{
+  content:"획득";
+  position:absolute;
+  top:8px;
+  right:8px;
+  font-size:12px;
+  background:#22c55e;
+  color:#001b08;
+  padding:3px 6px;
+  border-radius:6px;
+  font-weight:700;
+}
+
+.card.done:hover{
+  transform:translateY(-5px) scale(1.05);
+  box-shadow:
+    0 0 22px rgba(34,197,94,1),
+    0 0 40px rgba(34,197,94,.7),
+    inset 0 0 22px rgba(34,197,94,.35);
+}
+
+.counter{
+  text-align:center;
+  margin-top:10px;
+  color:#34d399;
+  font-weight:bold;
+}
+
+.grade-title{
+  width:1200px;
+  max-width:95%;
+  margin:40px auto 10px;
+  font-size:20px;
+  font-weight:700;
+  padding-left:8px;
+}
+
+/* 6성 제목 */
+.grade-6-title{
+  color:#ff4d4d;
+  text-shadow:0 0 10px rgba(255,60,60,.7);
+}
+
+/* 5성 제목 */
+.grade-5-title{
+  color:#ffd84d;
+  text-shadow:0 0 10px rgba(255,215,0,.7);
+}
+/* ===== 카드 등급 테두리 ===== */
+
+/* 6성 카드 */
+.card.grade6{
+  border:2px solid #ff2a2a;
+  box-shadow:0 0 14px rgba(255,0,0,.6);
+}
+
+/* 5성 카드 */
+.card.grade5{
+  border:2px solid #ffd700;
+  box-shadow:0 0 12px rgba(255,215,0,.6);
+}
+/* ===== 상단 게임 헤더 ===== */
+
+.top-header{
+  position:fixed;        /* ⭐ 핵심 (고정) */
+  top:0;
+  left:0;
+  width:100%;
+  height:72px;
+  z-index:9999;          /* 카드 위에 항상 보이게 */
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:linear-gradient(to bottom, rgba(2,6,23,.98), rgba(2,6,23,.65));
+  border-bottom:1px solid rgba(96,165,250,.25);
+  box-shadow:0 6px 35px rgba(0,0,0,.8);
+  backdrop-filter: blur(8px); /* ⭐ 유리 느낌 */
+}
+
+/* 중앙 타이틀 */
+.top-header .title{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:2px;
+  color:#93c5fd;
+  text-shadow:
+    0 0 10px rgba(96,165,250,.8),
+    0 0 25px rgba(37,99,235,.6);
+}
+
+.top-header.scrolled{
+  background:linear-gradient(to bottom, rgba(2,6,23,1), rgba(2,6,23,.85));
+  box-shadow:0 8px 40px rgba(0,0,0,1);
+}
+
+/* 뒤로가기 버튼 */
+.back-btn{
+  position:absolute;
+  left:18px;
+  top:50%;
+  transform:translateY(-50%);
+  padding:8px 14px;
+  border-radius:10px;
+  border:1px solid rgba(96,165,250,.5);
+  background:rgba(30,41,59,.55);
+  color:#bfdbfe;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+  backdrop-filter: blur(6px);
+}
+
+/* hover 효과 */
+.back-btn:hover{
+  background:#3b82f6;
+  color:white;
+  border-color:#60a5fa;
+  box-shadow:0 0 12px rgba(96,165,250,.8);
+  transform:translateY(-50%) scale(1.05);
+}
+
+/* 클릭 */
+.back-btn:active{
+  transform:translateY(-50%) scale(.96);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top-header">
+
+  <button class="back-btn" onclick="goPage('index')">
+    ↩️ 뒤로가기
+  </button>
+
+  <div class="title">무기 도감</div>
+
+</div>
+<div class="grade-title grade-6-title">★ 6성 무기</div>
+<div class="grid" id="grid6"></div>
+
+<div class="grade-title grade-5-title">★ 5성 무기</div>
+<div class="grid" id="grid5"></div>
+<script>
+
+
+
+let weapons=[];
+let owned=new Set(JSON.parse(localStorage.getItem("excludedCards")||"[]"));
+
+load();
+
+async function load(){
+  const res = await fetch("https://kuu6132.github.io/db.json");
+  const data=await res.json();
+  weapons=data.db;
+  render();
+}
+
+function normalizeText(str){
+  if(!str) return "";
+  return str
+    .toString()
+    .replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/\u00A0/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function render(){
+
+  const grid6=document.getElementById("grid6");
+  const grid5=document.getElementById("grid5");
+
+  grid6.innerHTML="";
+  grid5.innerHTML="";
+
+  weapons.forEach(w=>{
+
+    const name=normalizeText(w["이름"]);
+
+    const card=document.createElement("div");
+    card.className="card";
+
+    const grade=String(w["성급"]);
+    if(grade.includes("6")) card.classList.add("grade6");
+    else card.classList.add("grade5");
+
+    if(owned.has(name)) card.classList.add("done");
+
+    const img=
+    "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/"
+    +encodeURIComponent(name)+".png";
+
+    card.innerHTML=`
+      <div class="card-img">
+        <img src="${img}"
+        onerror="this.src='https://via.placeholder.com/120x110?text=?'">
+      </div>
+      <div class="card-name">${name}</div>
+    `;
+
+    // 우클릭 획득 체크
+    card.addEventListener("contextmenu",e=>{
+      e.preventDefault();
+
+      if(owned.has(name)){
+        owned.delete(name);
+        card.classList.remove("done");
+      }else{
+        owned.add(name);
+        card.classList.add("done");
+      }
+
+      localStorage.setItem("excludedCards",JSON.stringify([...owned]));
+    });
+
+    if(grade.includes("6")) grid6.appendChild(card);
+    else grid5.appendChild(card);
+  });
+}
+
+function goPage(page){
+
+  // GAS 웹앱인지 확인
+  if (location.hostname.includes("script.google.com")) {
+
+    // 현재 URL 유지하면서 page 파라미터만 교체
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', page);
+    window.location.replace(url.toString());
+
+  } else {
+
+    // GitHub Pages (정적 html 이동)
+    window.location.href = page + ".html";
+
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const header = document.querySelector(".top-header");
+  if(!header) return;
+
+  window.addEventListener("scroll", () => {
+    if(window.scrollY > 10){
+      header.classList.add("scrolled");
+    }else{
+      header.classList.remove("scrolled");
+    }
+  });
+});
+
+
+</script>
+
+
+</body>
+</html>
