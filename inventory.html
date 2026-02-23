@@ -12,6 +12,7 @@ body{
   font-family: "Segoe UI", Arial, sans-serif;
   color:#e5e7eb;
   padding-top:80px; /* ⭐ 헤더 높이만큼 밀어줌 (필수) */
+  padding-left:280px;
 }
 
 .header{
@@ -126,23 +127,8 @@ body{
     #0f1f14;
 }
 
-/* 획득 라벨 */
 .card.done::after{
-  content:"획득";
-  position:absolute;
-  top:8px;
-  right:8px;
-  font-size:12px;
-  background:#22c55e;
-  color:#022c16;
-  padding:4px 7px;
-  border-radius:7px;
-  font-weight:700;
-  box-shadow:0 0 8px rgba(34,197,94,.7);
-}
-
-.card.done::after{
-  content:"획득";
+  content:"✔ 획득";
   position:absolute;
   top:8px;
   right:8px;
@@ -270,6 +256,131 @@ body{
   transform:translateY(-50%) scale(.96);
 }
 
+.reset-owned-btn{
+  position:absolute;
+  left:140px; /* 뒤로가기 버튼 옆 */
+  top:50%;
+  transform:translateY(-50%);
+
+  padding:8px 14px;
+  border-radius:10px;
+  border:1px solid rgba(34,197,94,.6);
+  background:rgba(20,83,45,.55);
+  color:#bbf7d0;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+  backdrop-filter: blur(6px);
+}
+
+.reset-owned-btn:hover{
+  background:#22c55e;
+  color:#052e16;
+  box-shadow:0 0 12px rgba(34,197,94,.8);
+}
+
+.reset-owned-btn:active{
+  transform:translateY(-50%) scale(.96);
+}
+
+.count{
+  font-size:15px;
+  margin-left:10px;
+  color:#34d399;
+  font-weight:700;
+  text-shadow:0 0 8px rgba(52,211,153,.6);
+}
+
+.grade-6-title .count{
+  color:#ff6b6b;
+  text-shadow:0 0 8px rgba(255,80,80,.7);
+}
+
+.grade-5-title .count{
+  color:#ffd84d;
+  text-shadow:0 0 8px rgba(255,215,0,.7);
+}
+
+/* ===== 왼쪽 설명 영역 ===== */
+.side-info{
+  position:fixed;
+  top:95px;
+  left:18px;
+  width:340px;
+  z-index:998;
+}
+
+/* HUD 패널 */
+.info-box{
+  background:linear-gradient(
+    180deg,
+    rgba(15,23,42,.65),
+    rgba(2,6,23,.75)
+  );
+  border-radius:18px;
+  padding:18px 18px 16px;
+
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+
+  /* 핵심: 테두리 대신 광원 */
+  box-shadow:
+    inset 0 0 0 1px rgba(96,165,250,.18),
+    0 0 25px rgba(37,99,235,.25),
+    0 10px 40px rgba(0,0,0,.9);
+}
+
+/* 제목 */
+.info-title{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.5px;
+  color:#93c5fd;
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid rgba(96,165,250,.25);
+}
+
+/* 목록 */
+.guide-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.guide-list li{
+  position:relative;
+  padding-left:14px;
+}
+
+.guide-list li::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:9px;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:#8fb7ff;
+  box-shadow:0 0 8px rgba(120,170,255,.8);
+}
+
+/* hover 시 살짝 반응 (게임 UI 느낌) */
+.guide-list li:hover{
+  color:#e5edff;
+  transform:translateX(4px);
+  transition:.15s;
+}
+
+.info-sub{
+  font-size:10px;
+  letter-spacing:2px;
+  color:#60a5fa;
+  opacity:.6;
+  margin-bottom:4px;
+}
+
 </style>
 
 </head>
@@ -277,18 +388,44 @@ body{
 <body>
 
 <div class="top-header">
+<div class="side-info">
+  <div class="info-box">
+    <div class="info-sub">SYSTEM</div>
+<div class="info-title">도감 안내</div>
 
+<ul class="guide-list">
+  <li>무기 우클릭 하여 획득 표시</li>
+  <li>획득 무기 우클릭 하여 표시 해제</li>
+  <li>기록은 브라우저에 자동 저장</li>
+  <li>“획득 초기화”로 획득 표시 전체 삭제</li>
+  <li>뒤로 가기 눌러서 기질 파밍으로 돌아감</li>
+</ul>
+  </div>
+</div>
   <button class="back-btn" onclick="goPage('index')">
     ↩️ 뒤로가기
   </button>
 
-  <div class="title">무기 도감</div>
+  <button class="reset-owned-btn" onclick="resetOwned()">
+    🧹 획득 초기화
+  </button>
+
+  <div class="title">
+  무기 도감
+  <span class="count" id="totalCount">(0 / 0)</span>
+</div>
 
 </div>
-<div class="grade-title grade-6-title">★ 6성 무기</div>
+<div class="grade-title grade-6-title">
+  ★ 6성 무기
+  <span class="count" id="sixCount">(0 / 0)</span>
+</div>
 <div class="grid" id="grid6"></div>
 
-<div class="grade-title grade-5-title">★ 5성 무기</div>
+<div class="grade-title grade-5-title">
+  ★ 5성 무기
+  <span class="count" id="fiveCount">(0 / 0)</span>
+</div>
 <div class="grid" id="grid5"></div>
 <script>
 
@@ -304,6 +441,7 @@ async function load(){
   const data=await res.json();
   weapons=data.db;
   render();
+  updateCounts();
 }
 
 function normalizeText(str){
@@ -362,11 +500,13 @@ function render(){
       }
 
       localStorage.setItem("excludedCards",JSON.stringify([...owned]));
+      updateCounts();
     });
 
     if(grade.includes("6")) grid6.appendChild(card);
     else grid5.appendChild(card);
   });
+  
 }
 
 function goPage(page){
@@ -400,6 +540,51 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+function resetOwned(){
+
+  // 확인창 (실수 방지)
+  if(!confirm("모든 무기의 획득 상태를 초기화 하시겠습니까?")) return;
+
+  // 1. localStorage 삭제
+  localStorage.removeItem("excludedCards");
+
+  // 2. 메모리 데이터 초기화
+  owned.clear();
+
+  // 3. 화면 다시 그림
+  render();
+}
+
+function updateCounts(){
+
+  let totalOwned = 0;
+  let sixOwned = 0;
+  let fiveOwned = 0;
+
+  let total = weapons.length;
+  let sixTotal = 0;
+  let fiveTotal = 0;
+
+  weapons.forEach(w=>{
+    const name = normalizeText(w["이름"]);
+    const isOwned = owned.has(name);
+    const grade = String(w["성급"]);
+
+    if(grade.includes("6")){
+      sixTotal++;
+      if(isOwned) sixOwned++;
+    }else{
+      fiveTotal++;
+      if(isOwned) fiveOwned++;
+    }
+
+    if(isOwned) totalOwned++;
+  });
+
+  document.getElementById("totalCount").textContent = `(${totalOwned} / ${total})`;
+  document.getElementById("sixCount").textContent   = `(${sixOwned} / ${sixTotal})`;
+  document.getElementById("fiveCount").textContent  = `(${fiveOwned} / ${fiveTotal})`;
+}
 
 </script>
 

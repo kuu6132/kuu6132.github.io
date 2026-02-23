@@ -9,6 +9,7 @@
   font-family: "Segoe UI", Arial, sans-serif;
   color:#e5e7eb;
   padding-top:80px; /* ⭐ 헤더 높이만큼 밀어줌 (필수) */
+  padding-left:280px;
 }
 
     .container {
@@ -157,10 +158,9 @@
 
 .card-grade {
   font-size: 12px;
-  padding: 3px 7px;
-  border-radius: 6px;
-  background: #2a2a2a;
-  color: #ccc;
+  padding: 3px 8px;
+  border-radius: 7px;
+  font-weight:600;
 }
 
 .card-options {
@@ -202,6 +202,29 @@
   padding: 14px;
   box-sizing: border-box;
 }
+
+/* 6성 뱃지 */
+.grade-6 .card-grade{
+  background: linear-gradient(145deg,#7a0000,#ff2a2a);
+  color:#fff;
+  border:1px solid #ff6b6b;
+  box-shadow:
+    0 0 6px rgba(255,60,60,.8),
+    0 0 14px rgba(255,0,0,.45);
+  font-weight:700;
+}
+
+/* 5성 뱃지 */
+.grade-5 .card-grade{
+  background: linear-gradient(145deg,#5a4a00,#ffd700);
+  color:#1a1a1a;
+  border:1px solid #ffe066;
+  box-shadow:
+    0 0 6px rgba(255,215,0,.7),
+    0 0 12px rgba(255,200,0,.45);
+  font-weight:700;
+}
+
 /* 6성 */
 .grade-6 {
   border-color: #ff2a2a;
@@ -246,7 +269,7 @@
 
 /* 좌상단 체크 표시 */
 .result-card.excluded::after{
-  content: "✔ 완료";
+  content: "✔ 획득";
   position: absolute;
   top: 6px;
   left: 6px;
@@ -380,10 +403,287 @@
   box-shadow:0 0 12px rgba(96,165,250,.9);
     transform:translateY(-50%) scale(.96);
 }
+
+/* ===== 왼쪽 설명 영역 ===== */
+.side-info{
+  position:fixed;
+  top:95px;
+  left:18px;
+  width:340px;
+  z-index:998;
+}
+
+/* HUD 패널 */
+.info-box{
+  background:linear-gradient(
+    180deg,
+    rgba(15,23,42,.65),
+    rgba(2,6,23,.75)
+  );
+  border-radius:18px;
+  padding:18px 18px 16px;
+
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+
+  /* 핵심: 테두리 대신 광원 */
+  box-shadow:
+    inset 0 0 0 1px rgba(96,165,250,.18),
+    0 0 25px rgba(37,99,235,.25),
+    0 10px 40px rgba(0,0,0,.9);
+}
+
+/* 제목 */
+.info-title{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.5px;
+  color:#93c5fd;
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid rgba(96,165,250,.25);
+}
+
+.info-sub{
+  font-size:10px;
+  letter-spacing:2px;
+  color:#60a5fa;
+  opacity:.6;
+  margin-bottom:4px;
+}
+
+/* 목록 */
+.guide-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.guide-list li{
+  position:relative;
+  padding-left:14px;
+}
+
+.guide-list li::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:9px;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:#8fb7ff;
+  box-shadow:0 0 8px rgba(120,170,255,.8);
+}
+
+/* hover 시 살짝 반응 (게임 UI 느낌) */
+.guide-list li:hover{
+  color:#e5edff;
+  transform:translateX(4px);
+  transition:.15s;
+}
+
+/* ===== 추천옵션 박스 2분할 ===== */
+.stats-summary{
+  display:flex;
+  gap:20px;
+  padding:14px;
+  background:#0a0a0a;
+  border:1px solid #555;
+  border-radius:8px;
+}
+
+/* 왼쪽 검색 영역 */
+.summary-left{
+  width:45%;
+  min-width:240px;
+  border-right:1px solid #333;
+  padding-right:15px;
+}
+
+/* 오른쪽 추천 텍스트 */
+.summary-right{
+  width:55%;
+  line-height:1.6;
+  font-size:14px;
+}
+
+/* 검색창 */
+.search-input{
+  width:100%;
+  padding:9px 11px;
+  border-radius:7px;
+  border:1px solid #374151;
+  background:#020617;
+  color:#e5e7eb;
+  outline:none;
+  margin-top:6px;
+  box-sizing:border-box;
+}
+
+.search-input:focus{
+  border-color:#60a5fa;
+  box-shadow:0 0 8px rgba(96,165,250,.6);
+}
+
+/* 검색 결과 리스트 */
+.search-result{
+  margin-top:8px;
+  max-height:240px;
+  overflow-y:auto;
+  border:1px solid #374151;
+  border-radius:8px;
+  background:#020617;
+  box-shadow:0 10px 25px rgba(0,0,0,.6);
+}
+
+.search-item:last-child{ border-bottom:none; }
+
+.search-item:hover{
+  background:#1e293b;
+  color:#93c5fd;
+}
+
+.weapon-guide{
+  margin-top:12px;
+  padding:10px;
+  border-radius:8px;
+  background:rgba(30,41,59,.45);
+  border:1px solid rgba(96,165,250,.25);
+  line-height:1.6;
+  font-size:13px;
+}
+.weapon-guide b{ 
+  color:#93c5fd; 
+  }
+
+/* 검색 결과 등급 표시 */
+
+/* 6성 */
+.search-item.grade6{
+  color:#ff6b6b;
+  font-weight:700;
+  text-shadow:0 0 6px rgba(255,70,70,.55);
+}
+
+/* 5성 */
+.search-item.grade5{
+  color:#ffd84d;
+  font-weight:600;
+  text-shadow:0 0 6px rgba(255,215,0,.45);
+}
+
+/* 별표 텍스트 */
+
+.search-item.grade6:hover{
+  background:rgba(255,60,60,.15);
+}
+
+.search-item.grade5:hover{
+  background:rgba(255,215,0,.12);
+}
+
+/* ===== 검색창 획득 표시 ===== */
+
+/* 획득 무기 */
+.search-item.owned{
+  background:rgba(34,197,94,.10);
+  box-shadow: inset 0 0 0 1px rgba(34,197,94,.25);
+}
+
+/* hover */
+.search-item.owned:hover{
+  background:rgba(34,197,94,.18);
+}
+
+.weapon-count{
+  margin-left:10px;
+  font-weight:700;
+  color:#93c5fd;
+  text-shadow:0 0 8px rgba(96,165,250,.6);
+}
+
+/* 한 줄 정렬 */
+.search-item{
+  padding:8px 10px;
+  cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+/* 이름 */
+.search-name{
+  flex:1;
+}
+
+/* 오른쪽 상태 묶음 */
+.search-status{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* 획득 표시 */
+.search-owned-badge{
+  background:#22c55e;
+  color:#052e16;
+  padding:2px 7px;
+  border-radius:6px;
+  font-size:11px;
+  font-weight:700;
+  box-shadow:0 0 6px rgba(0,255,120,.5);
+}
+
+/* ★표시 */
+.grade-tag{
+  margin-left:6px;
+  font-size:12px;
+  opacity:.9;
+}
+
+.search-item{
+  cursor: pointer;
+}
+
+.search-item:hover{
+  cursor: context-menu;
+}
+
+/* 선택된 무기 이름 표시 */
+.card-title.target{
+  color:#60a5fa !important;          /* 글자 파랑 */
+  font-weight:800;
+  text-shadow:0 0 10px rgba(96,165,250,.9);
+}
+
   </style>
 </head>
 <body>
 <div class="top-header">
+  <div class="side-info">
+  <div class="info-box">
+    <div class="info-sub">SYSTEM</div>
+<div class="info-title">파밍 안내</div>
+      <ul class="guide-list">
+  <li>체크리스트 를 눌러 체크리스트로 이동 가능 </li>
+  <li>데이터는 브라우저에 자동 저장</li>
+  <li>Save로 저장된 데이터를 Load로 불러오기 가능</li>
+  <li>무기 도감에서 전체적인 파밍 상황을 한눈에 볼수 있음</li>
+  <li>검색 초기화 버튼을 눌러 옵션 및 검색 초기화</li>
+  <li>무기 검색후 추천 선택지들 자동 선택</li>
+  <li>추천 스탯의 경우 2개 이하라면 해당 선택지 + (아무옵션)
+    4개 이상이라면 그중 3개 선택
+  </li>
+  <li>검색한 무기는 결과창에 파란색 이름으로 확인</li>
+  <li>최다 기질 저격 옵션 에서 지역에 따른 최고효율 파밍</li>
+  <li>검색 목록에서도 우클릭으로 획득 체크 가능</li>
+  
+</ul>
+  </div>
+</div>
   <button class="back-btn" onclick="goPage('index')">🧮 기질 파밍</button>
   <button class="back-btn" onclick="goPage('daily')">📋 체크리스트</button>
 </div>
@@ -393,10 +693,11 @@
     <div class="panel-header">
     <div class="panel-title">● 기초 옵션</div>
      <div class="toggle-wrapper">
-      <button class="data-btn" onclick="exportToJSON()">📥 저장하기</button>
+      <button class="data-btn" onclick="exportToJSON()">📥 Save</button>
   <input type="file" id="importFile" style="display:none;" onchange="importFromJSON(event)" accept=".json">
-  <button class="data-btn" onclick="document.getElementById('importFile').click()">📤 불러오기</button>
+  <button class="data-btn" onclick="document.getElementById('importFile').click()">📤 Load</button>
   <button class="data-btn" onclick="goPage('inventory')">📚 무기 도감</button>
+  <button class="data-btn" onclick="clearAll()">🔃 검색 초기화</button>
  
   
 </div>
@@ -419,15 +720,42 @@
     <div class="options" id="area"></div>
   </div>
   <div class="panel">
-  <div class="panel-title">● 무기</div>
-  <div id="stats-summary" class="stats-summary"></div>
-    <div id="result" class="result-list"></div>
-</div>
+  <div class="panel-title" id="weaponPanelTitle">● 무기</div>
+
+  <!-- 상단 정보 + 검색 2분할 -->
+  <div id="stats-summary" class="stats-summary">
+
+    <!-- 왼쪽 : 검색 -->
+    <div class="summary-left">
+      <div class="search-title">🔎 무기 검색</div>
+
+      <input
+        type="text"
+        id="weaponSearch"
+        class="search-input"
+        placeholder="무기 이름 입력..."
+        oninput="searchWeapon()"
+      >
+      <div id="weaponGuide" class="weapon-guide"></div>
+
+      <div id="searchResult" class="search-result"></div>
+    </div>
+
+    <!-- 오른쪽 : 추천 정보 -->
+    <div class="summary-right" id="summaryText">
+    </div>
+
+  </div>
+
+  <!-- 무기 결과 카드 출력 영역 (★ 이거 반드시 필요) -->
+  <div id="result" class="result-list"></div>
+
 </div>
 
 <script>
 
-
+let autoSelecting = false;
+let lockedTargetWeapon = null;
 let dbdata = [];
 let optiondata = {};
 let currentResult = [];
@@ -480,6 +808,8 @@ async function loadData() {
     optiondata = data.options;
     
     init();
+    updateWeaponPanelTitle();
+
     setTimeout(updateResult, 0);
 
   } catch (err) {
@@ -528,13 +858,16 @@ function updateResult() {
  }
   const resultEl = document.getElementById("result");
   resultEl.innerHTML = "";
-  const statsEl = document.getElementById("stats-summary")
+  const statsEl = document.getElementById("summaryText")
+  const selectedAreaText = selected.area ? selected.area : "없음";
+
   statsEl.innerHTML = `
-  📊 추천 옵션<br>
-  스탯 옵션: <strong>${'없음'}</strong><br>
-  스킬 옵션: <strong>${'없음'}</strong><br>
-  추천 파밍지역:<strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
-  무기 현황: <strong>${cleared} / ${total} (${percent}%)</strong>
+  ‼️최다 기질 저격 옵션‼️<br>
+    선택한 지역: <strong>${selectedAreaText}</strong><br>
+    스탯 옵션: <strong>${'없음'}</strong><br>
+    스킬 옵션: <strong>${'없음'}</strong><br>
+    ============================================================<br>
+    최고 효율 파밍지역: <strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
   
  `;
   // 1. 선택 여부 확인
@@ -553,7 +886,7 @@ function updateResult() {
     } else {
       result = dbdata.filter(row => {
         // 🔥 excluded 숨김
-        if (excludedIds.has(row["이름"])) return false;
+        
 
         const rowOpts = [
         ...parseOptions(row["옵션1"]),
@@ -652,7 +985,7 @@ function updateResult() {
  });
  primaryStrings = topPrimary.map(e => `${e[0]}(${e[1]})`);
  subStrings = topSub.map(e => `${e[0]}(${e[1]})`);
-  const statsEl = document.getElementById("stats-summary");
+  const statsEl = document.getElementById("summaryText");
  let optionText = "없음";
  let topText = "없음";
 
@@ -664,17 +997,40 @@ function updateResult() {
   .map(opt => `${opt}(${rec.top3Count[opt]||0})`)
   .join(', ');
 
-topText = `${rec.bestOption} (${rec.score}개)`;
+  topText = `${rec.bestOption} (${rec.score}개)`;
   }
  }
+  const selectedAreaText = selected.area ? selected.area : "없음";
+
   statsEl.innerHTML = `
-  📊 추천 옵션<br>
+  ‼️최다 기질 저격 옵션‼️<br>
+  선택한 지역: <strong>${selectedAreaText}</strong><br>
   스탯 옵션: <strong>${optionText}</strong><br>
   스킬 옵션: <strong>${topText}</strong><br>
+  ============================================================<br>
   추천 파밍지역:<strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
-  무기 현황: <strong>${cleared} / ${total} (${percent}%)</strong>
   `;
- 
+ result.sort((a,b)=>{
+
+  const aOwned = excludedIds.has(a["이름"]);
+  const bOwned = excludedIds.has(b["이름"]);
+
+  // 1️⃣ 미획득 먼저
+  if(aOwned !== bOwned){
+    return aOwned ? 1 : -1;
+  }
+
+  // 2️⃣ 성급 높은 것 먼저 (6성 → 5성)
+  const gradeA = parseInt(a["성급"]);
+  const gradeB = parseInt(b["성급"]);
+
+  if(gradeA !== gradeB){
+    return gradeB - gradeA;
+  }
+
+  // 3️⃣ 이름순
+  return a["이름"].localeCompare(b["이름"], 'ko');
+  });
     }
   }
   
@@ -707,7 +1063,8 @@ topText = `${rec.bestOption} (${rec.score}개)`;
         card.remove();
         renderStats();
         updateResult();
-            
+        refreshSearchList();
+        updateWeaponPanelTitle();   
     });
 
     const baseUrl = "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/";
@@ -738,7 +1095,13 @@ topText = `${rec.bestOption} (${rec.score}개)`;
     resultEl.appendChild(card);
   });
   currentResult = result; // result는 선택해서 나온 결과값
+  if(!autoSelecting){
   updateOptionAvailability();
+  }
+  updateWeaponPanelTitle();
+  if(lockedTargetWeapon){
+  setTimeout(()=>focusWeapon(lockedTargetWeapon), 0);
+  }
 }
 
 function isSelected(optionValue) {
@@ -1025,22 +1388,23 @@ function normalizeText(str){
 }
 
 function updateOptionAvailability() {
+
   const types = ["primary", "secondary", "skill", "area"];
 
   types.forEach(type => {
     document.querySelectorAll(`#${type} .btn`).forEach(btn => {
       const value = btn.textContent;
 
-      // 1. 이미 내가 누른 버튼은 비활성화 계산 제외
       const isSelected = type === "primary" 
         ? selected.primary.includes(value) 
         : selected[type] === value;
-      
+
       if (isSelected) {
-        btn.classList.remove("disabled");
-        return;
-      }
-      // 2. 이 버튼을 눌렀을 때 결과가 나올 수 있는지 검사
+  btn.classList.remove("disabled");
+  btn.classList.add("active"); // ★ 이거 추가 (핵심)
+  return;
+}
+
       const isPossible = dbdata.some(row => {
         if (excludedIds.has(row["이름"])) return false;
 
@@ -1051,25 +1415,28 @@ function updateOptionAvailability() {
 
           if (!sel || (Array.isArray(sel) && sel.length === 0)) return true;
 
-          const rowOpts = [row["옵션1"], row["옵션2"], row["옵션3"]].filter(Boolean).map(v => v.trim());
+          const rowOpts = [
+            ...parseOptions(row["옵션1"]),
+            ...parseOptions(row["옵션2"]),
+            ...parseOptions(row["옵션3"])
+          ];
 
           if (t === "area") {
-  if(!row["지역"]) return false;
-
-  const areas = String(row["지역"])
-    .split(',')
-    .map(a=>normalizeText(a));
-
-  return areas.includes(normalizeText(sel));
-  }
-
-          // 🔥 수정 포인트: Primary(배열)는 하나라도 포함되면(some) 활성화 유지
-          if (Array.isArray(sel)) {
-            return sel.some(s => rowOpts.includes(s.trim())); 
+            if(!row["지역"]) return false;
+            return String(row["지역"])
+              .split(',')
+              .map(a=>normalizeText(a))
+              .includes(normalizeText(sel));
           }
-                    return rowOpts.includes(sel.trim());
+
+          if (Array.isArray(sel)) {
+            return sel.some(s => rowOpts.includes(s.trim()));
+          }
+
+          return rowOpts.includes(sel.trim());
         });
       });
+
       btn.classList.toggle("disabled", !isPossible);
     });
   });
@@ -1085,19 +1452,56 @@ function clearType(type) {
     .forEach(b => b.classList.remove("active"));
 }
 
+const types = ["primary", "secondary", "skill","area"];
+
+function clearAll() {
+
+  lockedTargetWeapon = null;
+
+  // 1. 선택값 초기화 + 버튼 active 제거
+  types.forEach(t => clearType(t));
+
+  // ⭐⭐⭐ 검색창 초기화 추가
+  const input = document.getElementById("weaponSearch");
+  if(input){
+    input.value = "";
+  }
+
+  // 자동완성 목록 제거
+  const resultBox = document.getElementById("searchResult");
+  if(resultBox){
+    resultBox.innerHTML = "";
+  }
+
+  // 추천 안내 제거
+  const guide = document.getElementById("weaponGuide");
+  if(guide){
+    guide.innerHTML = "";
+  }
+
+  // 2. 결과 목록 다시 표시
+  updateResult();
+
+  // 3. 버튼 상태 복구
+  updateOptionAvailability();
+}
+
 function toggle(type, value, btn) {
+  
   if (type === "primary") {
-    // 🔥 Primary: 다중 선택 로직
+
     const index = selected.primary.indexOf(value);
+
     if (index > -1) {
-      selected.primary.splice(index, 1); // 이미 있으면 제거
+      selected.primary.splice(index, 1);
       btn.classList.remove("active");
     } else {
-      selected.primary.push(value); // 없으면 추가
+      selected.primary.push(value);
       btn.classList.add("active");
     }
+
   } else {
-    // 🎯 나머지: 단일 선택 로직 (기존 유지)
+
     if (selected[type] === value) {
       selected[type] = null;
       btn.classList.remove("active");
@@ -1107,10 +1511,15 @@ function toggle(type, value, btn) {
         .forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
     }
+
   }
+
+  // ⭐⭐⭐ 핵심
+  // 자동선택 중에는 결과 재계산 금지
+  if(!autoSelecting){
     updateResult();
-  // 아래 함수가 버튼의 disabled(비활성화)를 제어합니다.
-  updateOptionAvailability(); 
+    updateOptionAvailability();
+  }
 }
 
 function exportToJSON() {
@@ -1200,8 +1609,699 @@ function setActiveTab(){
   });
 }
 
-/* GAS 대응 + 일반웹 대응 */
-document.addEventListener("DOMContentLoaded", setActiveTab);
+function normalizeSearch(str){
+  return normalizeText(str).replace(/\s/g,'').toLowerCase();
+}
+
+function searchWeapon(){
+
+  const keyword = normalizeSearch(document.getElementById("weaponSearch").value);
+
+// 검색어가 완전히 비면 상태 초기화
+if(!keyword){
+  resetSearchState();
+  showUnownedList();
+  return;
+}
+  const resultBox = document.getElementById("searchResult");
+
+  resultBox.innerHTML="";
+  if(!keyword) return showUnownedList();
+
+  const remaining = dbdata;
+
+ dbdata
+  .filter(w=>{
+    const nameKey = normalizeSearch(w["이름"]);
+    return nameKey.includes(keyword);
+  })
+  .sort((a,b)=>searchSort(a,b,keyword))
+  .forEach(w=>{
+    addSearchItem(w["이름"]);
+  });
+}
+
+function focusWeapon(name){
+
+  // 이전 강조 제거
+  document.querySelectorAll(".card-title")
+    .forEach(el => el.classList.remove("target"));
+
+  // 카드 찾기
+  const card = document.querySelector(`.result-card[data-id="${name}"]`);
+  if(!card) return;
+
+  
+
+  // 이름 강조
+  const title = card.querySelector(".card-title");
+  if(title){
+    title.classList.add("target");
+  }
+}
+
+function showUnownedList(){
+
+  const resultBox = document.getElementById("searchResult");
+  resultBox.innerHTML="";
+
+  if(!dbdata || dbdata.length===0) return;
+
+  // 🔥 전체 무기를 기준으로 정렬
+  [...dbdata]
+    .sort(weaponSort)
+    .forEach(w=>{
+      addSearchItem(w["이름"]);
+    });
+}
+
+function addSearchItem(name){
+
+  const weapon=dbdata.find(w=>w["이름"]===name);
+  if(!weapon) return;
+
+  const grade=String(weapon["성급"]);
+  const is6=grade.includes("6");
+
+  const div=document.createElement("div");
+  div.className="search-item "+(is6?"grade6":"grade5");
+
+  const isOwned = excludedIds.has(name);
+  if(isOwned){
+    div.classList.add("owned");
+  }
+
+  /* ───────── 왼쪽 : 이름 ───────── */
+  const title=document.createElement("span");
+  title.className="search-name";
+  title.textContent=name;
+
+  /* ───────── 오른쪽 : 상태 묶음 ───────── */
+  const statusWrap=document.createElement("span");
+  statusWrap.className="search-status";
+
+  // 획득 배지
+  if(isOwned){
+    const badge=document.createElement("span");
+    badge.className="search-owned-badge";
+    badge.textContent="✔ 획득";
+    statusWrap.appendChild(badge);
+  }
+
+  // ★등급
+  const tag=document.createElement("span");
+  tag.className="grade-tag";
+  tag.textContent=is6?"(★6)":"(★5)";
+  statusWrap.appendChild(tag);
+
+  div.appendChild(title);
+  div.appendChild(statusWrap);
+
+  div.onclick = ()=>{
+
+  // 이전 상태 초기화
+  resetSearchState();
+
+  // 검색창 표시
+  document.getElementById("weaponSearch").value = name;
+  document.getElementById("searchResult").innerHTML = "";
+  lockedTargetWeapon = name;
+
+  // 추천 계산 (⭐ 한 번만!)
+  const rec = getTargetWeaponRecommendation(name);
+  if(!rec) return;
+
+  applyRecommendation(rec);
+
+  // ⭐ 마지막에 단 1번만
+  updateResult();
+  updateOptionAvailability();
+
+  // 왼쪽 안내 텍스트
+  const guide=document.getElementById("weaponGuide");
+  guide.innerHTML = `
+    <b>추천 지역:</b> ${rec.area} (${rec.score}개)<br>
+    <b>추천 옵션:</b> ${rec.option}<br>
+    <b>추천 스탯:</b> ${rec.stats.map(e=>`${e[0]}(${e[1]})`).join(", ")}
+  `;
+
+  // 카드로 스크롤
+  focusWeapon(name);
+};
+
+// 🔥 검색창에서도 우클릭 획득 토글
+div.addEventListener("contextmenu", (e)=>{
+  e.preventDefault();
+
+  const isOwned = excludedIds.has(name);
+
+  if(isOwned){
+    excludedIds.delete(name);
+  }else{
+    excludedIds.add(name);
+  }
+
+  localStorage.setItem("excludedCards", JSON.stringify([...excludedIds]));
+
+  refreshSearchList();
+  updateResult();
+  updateWeaponPanelTitle();
+
+  // ⭐⭐⭐⭐⭐ 여기 추가 (가장 중요)
+  setTimeout(()=>{
+    const input = document.getElementById("weaponSearch");
+    if(input){
+      const pos = input.selectionStart ?? input.value.length;
+      input.focus();
+      input.setSelectionRange(pos,pos);
+    }
+  },0);
+});
+
+  document.getElementById("searchResult").appendChild(div);
+}
+
+function refreshSearchList(){
+
+  const input=document.getElementById("weaponSearch");
+  if(!input) return;
+
+  const keyword=normalizeSearch(input.value);
+
+  // 검색어가 있으면 자동완성 다시
+  if(keyword){
+    searchWeapon();
+  }
+  // 검색어 없으면 전체 목록 다시
+  else{
+    showUnownedList();
+  }
+}
+
+function weaponSort(a, b){
+
+  const ownedA = excludedIds.has(a["이름"]);
+  const ownedB = excludedIds.has(b["이름"]);
+
+  /* 1순위 : 획득 여부 (미획득 먼저) */
+  if(ownedA !== ownedB){
+    return ownedA ? 1 : -1;
+  }
+
+  /* 2순위 : 성급 (6성 먼저) */
+  const gradeA = parseInt(a["성급"]);
+  const gradeB = parseInt(b["성급"]);
+
+  if(gradeA !== gradeB){
+    return gradeB - gradeA;
+  }
+
+  /* 3순위 : 이름순 */
+  return a["이름"].localeCompare(b["이름"], 'ko');
+}
+
+function updateWeaponPanelTitle(){
+
+  if(!dbdata || dbdata.length===0) return;
+
+  const remaining = getRemainingWeapons();
+  const total = dbdata.length;
+  const cleared = total - remaining.length;
+
+  const title = document.getElementById("weaponPanelTitle");
+  if(!title) return;
+
+  title.innerHTML = `● 무기 <span class="weapon-count">${cleared} / ${total}</span>`;
+}
+
+function activateOption(type, value){
+
+  if(!value) return;
+
+  const target = normalizeText(value);
+
+  const buttons = document.querySelectorAll(`#${type} .btn`);
+
+  buttons.forEach(btn=>{
+
+    const btnValue = normalizeText(btn.textContent);
+
+    if(btnValue === target){
+
+      if(type === "primary"){
+
+        if(!selected.primary.some(v => normalizeText(v) === target)){
+          selected.primary.push(btn.textContent);
+          btn.classList.add("active");
+        }
+
+      }else{
+        selected[type] = btn.textContent;
+        btn.classList.add("active");
+      }
+    }
+  });
+}
+
+function resetSearchState(){
+
+  // 1. 선택값 초기화
+  lockedTargetWeapon = null;
+  selected.primary = [];
+  selected.secondary = null;
+  selected.skill = null;
+  selected.area = null;
+
+  // 2. 버튼 active 제거
+  ["primary","secondary","skill","area"].forEach(type=>{
+    document
+      .querySelectorAll(`#${type} .btn`)
+      .forEach(btn=>btn.classList.remove("active"));
+  });
+
+  // 3. 추천 텍스트 초기화
+  const guide = document.getElementById("weaponGuide");
+  if(guide) guide.innerHTML="";
+
+  // 4. 결과창 초기화
+  const result = document.getElementById("result");
+  if(result) result.innerHTML="";
+
+  // 5. 옵션 비활성화 상태 복구
+  updateOptionAvailability();
+}
+
+function resetAllSelections(){
+
+  const types = ["primary","secondary","skill","area"];
+
+  types.forEach(type=>{
+    if(type==="primary"){
+      selected.primary=[];
+    }else{
+      selected[type]=null;
+    }
+
+    document
+      .querySelectorAll(`#${type} .btn`)
+      .forEach(b=>b.classList.remove("active"));
+  });
+}
+
+function calculateOptionBasedRecommendation(){
+
+  const guide = document.getElementById("weaponGuide");
+  if(!guide) return;
+
+  // 현재 결과 무기 목록
+  if(!currentResult || currentResult.length === 0){
+    guide.innerHTML="";
+    return;
+  }
+
+  /* 1️⃣ 지역별 무기 그룹화 */
+  const areaMap = {};
+
+  currentResult.forEach(w=>{
+    if(!w["지역"]) return;
+
+    String(w["지역"])
+      .split(',')
+      .map(a=>normalizeText(a))
+      .forEach(area=>{
+        if(!areaMap[area]) areaMap[area]=[];
+        areaMap[area].push(w);
+      });
+  });
+
+  let bestArea=null;
+  let bestScore=0;
+  let bestSub=null;
+  let bestStats=[];
+  let bestStatCount={};
+  let bestSubCount=0;
+
+  /* 2️⃣ 지역별 평가 */
+  Object.entries(areaMap).forEach(([area,weapons])=>{
+
+    // 옵션2+3 빈도 계산
+    const subCount={};
+
+    weapons.forEach(w=>{
+      [...parseOptions(w["옵션2"]),...parseOptions(w["옵션3"])]
+      .forEach(opt=>{
+        subCount[opt]=(subCount[opt]||0)+1;
+      });
+    });
+
+    if(Object.keys(subCount).length===0) return;
+
+    const sortedSub=Object.entries(subCount).sort((a,b)=>b[1]-a[1]);
+    const subOpt=sortedSub[0][0];
+    const subOptCount=sortedSub[0][1];  // ★ 추가 (중요)
+
+    // 그 옵션 가진 무기만
+    const subWeapons=weapons.filter(w=>
+      parseOptions(w["옵션2"]).includes(subOpt) ||
+      parseOptions(w["옵션3"]).includes(subOpt)
+    );
+
+    // 옵션1 통계
+    const primaryCount={};
+    subWeapons.forEach(w=>{
+      parseOptions(w["옵션1"]).forEach(opt=>{
+        primaryCount[opt]=(primaryCount[opt]||0)+1;
+      });
+    });
+
+    const sortedPrimary=Object.entries(primaryCount).sort((a,b)=>b[1]-a[1]);
+    if(!sortedPrimary.length) return;
+
+    const cutoffIndex=Math.min(2,sortedPrimary.length-1);
+    const cutoffScore=sortedPrimary[cutoffIndex][1];
+
+    const topStats=sortedPrimary.filter(e=>e[1]>=cutoffScore);
+
+    const statSet=new Set(topStats.map(e=>e[0]));
+
+    // 점수 계산
+    const score=subWeapons.filter(w=>
+      parseOptions(w["옵션1"]).some(opt=>statSet.has(opt))
+    ).length;
+
+    if(score>bestScore){
+      bestScore=score;
+      bestArea=area;
+      bestSub=subOpt;
+      bestSubCount=subOptCount;  // ★ 추가
+      bestStats=topStats;
+      bestStatCount=primaryCount;
+    }
+  });
+
+  if(!bestArea){
+    guide.innerHTML="";
+    return;
+  }
+
+  const statText=bestStats
+    .map(e=>`${e[0]}(${e[1]})`)
+    .join(", ");
+
+  guide.innerHTML=`
+  <b>추천 지역:</b> ${bestArea} (${bestScore}개)<br>
+  <b>추천 옵션:</b> ${bestSub} (${bestSubCount})<br>
+  <b>추천 스탯:</b> ${statText}
+  `;
+}
+
+function getTargetWeaponRecommendation(targetName){
+
+  const target = dbdata.find(w=>w["이름"]===targetName);
+  if(!target) return null;
+
+  const targetAreas = String(target["지역"])
+    .split(',')
+    .map(a=>normalizeText(a));
+
+  const targetSubOptions = [
+    ...parseOptions(target["옵션2"]),
+    ...parseOptions(target["옵션3"])
+  ];
+
+  let remaining = getRemainingWeapons();
+
+  // 타겟이 이미 획득 상태여도 계산에는 포함
+  if(!remaining.some(w=>w["이름"]===targetName)){
+    remaining = [...remaining, target];
+  }
+
+  let best = null;
+
+  targetAreas.forEach(area=>{
+
+    const areaWeapons = remaining.filter(w=>{
+      if(!w["지역"]) return false;
+      return String(w["지역"])
+        .split(',')
+        .map(a=>normalizeText(a))
+        .includes(area);
+    });
+
+    if(areaWeapons.length===0) return;
+
+    // ⭐ 핵심: 타겟 옵션 각각을 후보로 평가
+    targetSubOptions.forEach(candidateOption=>{
+
+      // 1️⃣ 해당 옵션 가진 무기
+      const subMatched = areaWeapons.filter(w=>
+        parseOptions(w["옵션2"]).includes(candidateOption) ||
+        parseOptions(w["옵션3"]).includes(candidateOption)
+      );
+
+      if(subMatched.length===0) return;
+
+      // 2️⃣ 옵션1 통계
+      const primaryCount={};
+      subMatched.forEach(w=>{
+        parseOptions(w["옵션1"]).forEach(opt=>{
+          primaryCount[opt]=(primaryCount[opt]||0)+1;
+        });
+      });
+
+      const sortedPrimary=Object.entries(primaryCount)
+        .sort((a,b)=>b[1]-a[1]);
+
+      if(sortedPrimary.length===0) return;
+
+      // top3 (동률 포함 컷라인 방식)
+      const cutoffIndex=Math.min(2,sortedPrimary.length-1);
+      const cutoffScore=sortedPrimary[cutoffIndex][1];
+      const topStats=sortedPrimary.filter(e=>e[1]>=cutoffScore);
+      const statSet=new Set(topStats.map(e=>e[0]));
+
+      // 3️⃣ 점수: 타겟 반드시 포함
+      let score=0;
+      subMatched.forEach(w=>{
+        const match=parseOptions(w["옵션1"]).some(opt=>statSet.has(opt));
+        if(match || w["이름"]===targetName) score++;
+      });
+
+      if(!best || score>best.score){
+        best={
+          area,
+          option:candidateOption,
+          stats:topStats,
+          score
+        };
+      }
+
+    });
+
+  });
+
+  return best;
+}
+
+function autoSelectOption(type, value){
+
+  if(!value) return;
+
+  // 공백 제거 정규화
+  const target = normalizeText(value).replace(/\s/g,'');
+
+  const buttons = document.querySelectorAll(`#${type} .btn`);
+
+  buttons.forEach(btn=>{
+
+    const btnValue = normalizeText(btn.textContent).replace(/\s/g,'');
+
+    // ⭐ 완전일치만 허용 (핵심 수정)
+    if(btnValue === target){
+
+  // disabled 상태 강제 해제
+  btn.classList.remove("disabled");
+
+  toggle(type, btn.textContent, btn);
+}
+  });
+}
+
+function applyRecommendation(rec){
+
+  if(!rec) return;
+
+  resetAllSelections();
+
+  // 상태 세팅
+  forceSelect("area", rec.area);
+
+  // ★ 여기 핵심
+  const optionType = findOptionType(rec.option);
+  if(optionType){
+    forceSelect(optionType, rec.option);
+  }
+
+  rec.stats.forEach(stat=>{
+    forceSelect("primary", stat[0]);
+  });
+
+  // ⭐⭐⭐ 여기 추가 (가장 중요)
+  syncButtonUI("area");
+  syncButtonUI("secondary");
+  syncButtonUI("skill");
+  syncButtonUI("primary");
+
+  // 마지막 계산
+  updateResult();
+  updateOptionAvailability();
+}
+
+function forceSelect(type, value){
+
+  if(!value) return;
+
+  const normalized = normalizeText(value);
+
+  // selected 상태 직접 세팅
+  if(type === "primary"){
+    if(!selected.primary.includes(value))
+      selected.primary.push(value);
+  }else{
+    selected[type] = value;
+  }
+
+  // 버튼 UI만 켜기
+  document.querySelectorAll(`#${type} .btn`).forEach(btn=>{
+    const btnValue = normalizeText(btn.textContent);
+
+    if(btnValue === normalized){
+      btn.classList.add("active");
+      btn.classList.remove("disabled");
+    }
+  });
+}
+
+function syncButtonUI(type){
+
+  document.querySelectorAll(`#${type} .btn`).forEach(btn=>{
+
+    const value = normalizeText(btn.textContent);
+
+    let isOn = false;
+
+    if(type === "primary"){
+      isOn = selected.primary.some(v => normalizeText(v) === value);
+    }else{
+      isOn = normalizeText(selected[type]) === value;
+    }
+
+    btn.classList.toggle("active", isOn);
+    if(isOn) btn.classList.remove("disabled");
+  });
+}
+
+function findOptionType(option){
+
+  const normalized = normalizeText(option);
+
+  // secondary 검사
+  const secondaryBtns = document.querySelectorAll("#secondary .btn");
+  for(const btn of secondaryBtns){
+    if(normalizeText(btn.textContent) === normalized){
+      return "secondary";
+    }
+  }
+
+  // skill 검사
+  const skillBtns = document.querySelectorAll("#skill .btn");
+  for(const btn of skillBtns){
+    if(normalizeText(btn.textContent) === normalized){
+      return "skill";
+    }
+  }
+
+  return null;
+}
+
+function getWeaponSimilarity(target, weapon){
+
+  if(!target || !weapon) return 0;
+
+  const targetOpts = [
+    ...parseOptions(target["옵션2"]),
+    ...parseOptions(target["옵션3"])
+  ];
+
+  const weaponOpts = [
+    ...parseOptions(weapon["옵션2"]),
+    ...parseOptions(weapon["옵션3"])
+  ];
+
+  // 겹치는 옵션 개수
+  let match = 0;
+
+  targetOpts.forEach(opt=>{
+    if(weaponOpts.includes(opt)) match++;
+  });
+
+  return match; // 값이 클수록 유사
+}
+
+function searchSort(a, b){
+
+  /* ⭐ 0순위 : 선택한 검색 무기 무조건 최상단 고정 */
+  if(lockedTargetWeapon){
+    if(a["이름"] === lockedTargetWeapon && b["이름"] !== lockedTargetWeapon) return -1;
+    if(b["이름"] === lockedTargetWeapon && a["이름"] !== lockedTargetWeapon) return 1;
+  }
+
+  /* 1️⃣ 옵션 유사도 */
+  let target = null;
+  if(lockedTargetWeapon){
+    target = dbdata.find(w => w["이름"] === lockedTargetWeapon);
+  }
+
+  if(target){
+    const simA = getWeaponSimilarity(target, a);
+    const simB = getWeaponSimilarity(target, b);
+
+    if(simA !== simB){
+      return simB - simA;
+    }
+  }
+
+  /* 2️⃣ 성급 (6성 → 5성) */
+  const gradeA = parseInt(a["성급"]);
+  const gradeB = parseInt(b["성급"]);
+
+  if(gradeA !== gradeB){
+    return gradeB - gradeA;
+  }
+
+  /* 3️⃣ 획득 여부 (미획득 우선) */
+  const ownedA = excludedIds.has(a["이름"]);
+  const ownedB = excludedIds.has(b["이름"]);
+
+  if(ownedA !== ownedB){
+    return ownedA ? 1 : -1;
+  }
+
+  /* 4️⃣ 이름순 */
+  return a["이름"].localeCompare(b["이름"], 'ko');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  setActiveTab();
+
+  const searchInput = document.getElementById("weaponSearch");
+
+  if(searchInput){
+    searchInput.addEventListener("focus", showUnownedList);
+  }
+
+});
 
 </script>
 
