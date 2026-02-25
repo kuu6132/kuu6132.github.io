@@ -1,8 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>일일 업무 보고</title>
+<title>무기 도감</title>
 
 <style>
 body{
@@ -10,198 +11,183 @@ body{
   background: radial-gradient(circle at 50% 20%, #0f172a, #020617 70%);
   font-family: "Segoe UI", Arial, sans-serif;
   color:#e5e7eb;
-  padding-top:80px;
+  padding-top:80px; /* ⭐ 헤더 높이만큼 밀어줌 (필수) */
 }
 
- .container{
-  max-width:1000px;
-  width:100%;
-  margin:0 auto;
-  padding:0 20px;
-  box-sizing:border-box;
-}
-
-/* 상단 카드 */
 .header{
-  background:rgba(25,35,60,0.6);
-  border-radius:18px;
-  padding:25px;
-  box-shadow:0 0 25px rgba(0,0,0,.4);
-}
-
-.header-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.percent{
-  font-size:34px;
-  font-weight:bold;
+  text-align:center;
+  padding:20px 0;
+  font-size:26px;
+  font-weight:700;
   color:#60a5fa;
 }
 
-.progress-wrap{
-  margin-top:12px;
-  height:8px;
-  background:#1f2937;
-  border-radius:8px;
-  overflow:hidden;
+.grid{
+  width:1200px;
+  max-width:95%;
+  margin:20px auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+  gap:16px;
 }
 
-#progressBar{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#3b82f6,#60a5fa);
-  transition:.25s;
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid #00cc44 none;
+  width: fit-content;
+  gap: 15px;
 }
 
-/* 버튼 */
-.controls{
-  margin-top:15px;
+.data-btn  {
+  background-color: #007bff; /* 파란색 배경 */
+  color: white;              /* 글자색 흰색 */
+  border: 1px solid #0056b3; /* 조금 더 진한 파란색 테두리 */
 }
 
-.btn{
-  display:inline-block;
-  padding:6px 14px;
-  border-radius:20px;
-  background:#1f2937;
-  border:1px solid #374151;
+.data-btn:hover {
+  background-color: #0056b3; /* 마우스 올리면 더 진하게 */
+}
+
+.card{
+  width:160px;
+  background:#111;   /* 기본 어둠 */
+  border-radius:10px;
+  padding:10px;
+  box-sizing:border-box;
   cursor:pointer;
-  transition:.2s;
-  margin-right:8px;
-}
-
-.btn:hover{
-  background:#2c3b55;
-  transform:translateY(-2px);
-}
-
-.btn.active-hide{
-  border-color:#34d399;
-  color:#34d399;
-  background:rgba(52,211,153,0.15);
-}
-
-.excludeViewBtn.active-hide{
-  border-color:#34d399;
-  color:#34d399;
-  background:rgba(52,211,153,0.15);
-}
-
-.btn.active{
-  background:#3b82f6;
-  border:none;
-}
-
-/* 카테고리 */
-.category-title{
-  margin-top:30px;
-  margin-bottom:10px;
-  color:#34d399;
-  font-weight:bold;
-}
-
-/* 그룹 카드 */
-.group{
-  background:rgba(30,41,59,0.6);
-  border-radius:14px;
-  margin-bottom:14px;
+  transition:.18s;
+  position:relative;
   overflow:hidden;
 }
+.card.grade6::before{
+  background:
+    radial-gradient(circle at 50% 120%, rgba(255,40,40,.45), transparent 60%),
+    radial-gradient(circle at 50% -20%, rgba(255,0,0,.25), transparent 60%);
+}
 
-.group-header{
-  padding:15px;
+.card.grade5::before{
+  background:
+    radial-gradient(circle at 50% 120%, rgba(255,200,40,.45), transparent 60%),
+    radial-gradient(circle at 50% -20%, rgba(255,215,0,.25), transparent 60%);
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.18;
+  pointer-events:none;
+  transition:.2s;
+}
+
+.card:hover{
+  transform:translateY(-4px) scale(1.03);
+  border-color:#60a5fa;
+  box-shadow:0 0 18px rgba(96,165,250,.45);
+}
+
+.card-img{
+  width:100%;
+  height:110px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  cursor:pointer;
+  justify-content:center;
 }
 
-.group-info{
-  margin-left:10px;
+.card-img img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
 }
 
-.group-title{
+.card-name{
+  text-align:center;
+  margin-top:8px;
+  font-size:13px;
   font-weight:600;
 }
+/* 획득 상태 (우클릭) */
+.card.done{
+  border-color:#22c55e !important;
 
-.group-desc{
+  /* 녹색 광채 */
+  box-shadow:
+    0 0 14px rgba(34,197,94,.8),
+    0 0 28px rgba(34,197,94,.45),
+    inset 0 0 18px rgba(34,197,94,.25);
+
+  background:
+    radial-gradient(circle at 50% 120%, rgba(34,197,94,.25), transparent 65%),
+    radial-gradient(circle at 50% -30%, rgba(34,197,94,.18), transparent 60%),
+    #0f1f14;
+}
+
+.card.done::after{
+  content:"✔ 획득";
+  position:absolute;
+  top:8px;
+  right:8px;
   font-size:12px;
-  opacity:.6;
+  background:#22c55e;
+  color:#001b08;
+  padding:3px 6px;
+  border-radius:6px;
+  font-weight:700;
 }
 
-.group-count{
-  border:1px solid #334155;
-  padding:4px 10px;
-  border-radius:8px;
-  font-size:12px;
+.card.done:hover{
+  transform:translateY(-5px) scale(1.05);
+  box-shadow:
+    0 0 22px rgba(34,197,94,1),
+    0 0 40px rgba(34,197,94,.7),
+    inset 0 0 22px rgba(34,197,94,.35);
 }
 
-/* 하위 목록 */
-.group-items{
-  max-height:0;
-  overflow:hidden;
-  transition:.25s;
-  border-top:1px dashed #334155;
-}
-
-.group.open .group-items{
-  max-height:500px;
-}
-
-.sub-item{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:10px 20px;
-  font-size:14px;
-}
-
-.sub-item input{
-  width:16px;
-  height:16px;
-}
-
-.hide-completed .group.done{
-  display:none;
-}
-.group.done{
-  background:linear-gradient(180deg, rgba(16,185,129,0.25), rgba(30,41,59,0.6));
-  box-shadow:0 0 12px rgba(16,185,129,0.35);
-  border:1px solid rgba(16,185,129,0.6);
-}
-
-/* 완료된 그룹 제목 강조 */
-.group.done .group-title{
-  color:#34d399;
-  text-decoration:line-through;
-}
-
-/* 카운트 박스 강조 */
-.group.done .group-count{
-  border-color:#34d399;
+.counter{
+  text-align:center;
+  margin-top:10px;
   color:#34d399;
   font-weight:bold;
 }
-.sub-item.completed{
-  opacity:.45;
-  text-decoration:line-through;
-}
-.group-check{
-   width:22px;
-  height:22px;
-}
-.top-nav{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  margin-bottom:20px;
+
+.grade-title{
+  width:1200px;
+  max-width:95%;
+  margin:40px auto 10px;
+  font-size:20px;
+  font-weight:700;
+  padding-left:8px;
 }
 
-.excluded-group{
-  display:none !important;
+/* 6성 제목 */
+.grade-6-title{
+  color:#ff4d4d;
+  text-shadow:0 0 10px rgba(255,60,60,.7);
 }
+
+/* 5성 제목 */
+.grade-5-title{
+  color:#ffd84d;
+  text-shadow:0 0 10px rgba(255,215,0,.7);
+}
+/* ===== 카드 등급 테두리 ===== */
+
+/* 6성 카드 */
+.card.grade6{
+  border:2px solid #ff2a2a;
+  box-shadow:0 0 14px rgba(255,0,0,.6);
+}
+
+/* 5성 카드 */
+.card.grade5{
+  border:2px solid #ffd700;
+  box-shadow:0 0 12px rgba(255,215,0,.6);
+}
+/* ===== 상단 게임 헤더 ===== */
 
 .top-header{
   position:fixed;        /* ⭐ 핵심 (고정) */
@@ -221,11 +207,6 @@ body{
   backdrop-filter: blur(8px); /* ⭐ 유리 느낌 */
 }
 
-.top-header.scrolled{
-  background:linear-gradient(to bottom, rgba(2,6,23,1), rgba(2,6,23,.85));
-  box-shadow:0 8px 40px rgba(0,0,0,1);
-}
-
 /* 중앙 타이틀 */
 .top-header .title{
   font-size:28px;
@@ -237,7 +218,14 @@ body{
     0 0 25px rgba(37,99,235,.6);
 }
 
+.top-header.scrolled{
+  background:linear-gradient(to bottom, rgba(2,6,23,1), rgba(2,6,23,.85));
+  box-shadow:0 8px 40px rgba(0,0,0,1);
+}
+
+/* 뒤로가기 버튼 */
 .back-btn{
+  position:absolute;
   left:18px;
   top:50%;
   transform:translateY(-50%);
@@ -263,23 +251,63 @@ body{
 }
 
 /* 클릭 */
-.back-btn.active{
-  background:#3b82f6;
-  color:white;
-  border-color:#60a5fa;
-  box-shadow:0 0 12px rgba(96,165,250,.9);
+.back-btn:active{
   transform:translateY(-50%) scale(.96);
- 
 }
 
-.sidebar{
-  width:270px;
-  min-width:270px;
+.reset-owned-btn{
+  position:absolute;
+  left:140px; /* 뒤로가기 버튼 옆 */
+  top:50%;
+  transform:translateY(-50%);
 
-  position:sticky;
-  top:110px;
+  padding:8px 14px;
+  border-radius:10px;
+  border:1px solid rgba(34,197,94,.6);
+  background:rgba(20,83,45,.55);
+  color:#bbf7d0;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+  backdrop-filter: blur(6px);
+}
 
-  height:fit-content; /* ⭐ 길어지는 원인 제거 */
+.reset-owned-btn:hover{
+  background:#22c55e;
+  color:#052e16;
+  box-shadow:0 0 12px rgba(34,197,94,.8);
+}
+
+.reset-owned-btn:active{
+  transform:translateY(-50%) scale(.96);
+}
+
+.count{
+  font-size:15px;
+  margin-left:10px;
+  color:#34d399;
+  font-weight:700;
+  text-shadow:0 0 8px rgba(52,211,153,.6);
+}
+
+.grade-6-title .count{
+  color:#ff6b6b;
+  text-shadow:0 0 8px rgba(255,80,80,.7);
+}
+
+.grade-5-title .count{
+  color:#ffd84d;
+  text-shadow:0 0 8px rgba(255,215,0,.7);
+}
+
+/* ===== 왼쪽 설명 영역 ===== */
+.side-info{
+  position:fixed;
+  top:95px;
+  left:18px;
+  width:280px;
+  z-index:998;
 }
 
 /* HUD 패널 */
@@ -352,30 +380,51 @@ body{
   margin-bottom:4px;
 }
 
-.reset-timer{
-  font-size:13px;
-  margin-top:4px;
-  color:#93c5fd;
-  opacity:.85;
-  font-weight:600;
-  letter-spacing:1px;
+/* 옵션 영역 */
+.card-options{
+  margin-top:6px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  font-size:12px;
+}
+
+/* 공통 옵션 스타일 */
+.opt{
+  display:block;
+  padding:3px 6px;
+  border-radius:6px;
+  text-align:center;
+  background:#1b2435;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* 옵션 공통 (초록 통일) */
+.opt{
+  display:block;
+  padding:4px 6px;
+  border-radius:7px;
+  text-align:center;
+  font-size:12px;
+
+  color:#bbf7d0;
+  background:rgba(16,185,129,.10);
+  border:1px solid rgba(52,211,153,.55);
+
+  box-shadow:
+    0 0 6px rgba(16,185,129,.45),
+    inset 0 0 6px rgba(16,185,129,.15);
 }
 
 /* ===== 접히는 시스템 패널 ===== */
 
 .side-info{
   position:fixed;
-  top:110px;
-  left:20px;
+  top:95px;
+  left:18px;
   width:280px;
-  z-index:1000;
-  transform:translateX(0);
-  transition:transform .35s ease;
-}
-
-/* 접힌 상태 : 화면 밖으로 이동 */
-.side-info.collapsed{
-  transform:translateX(-280px);
+  z-index:998;
+  transition:transform .35s cubic-bezier(.25,.8,.25,1);
 }
 
 /* 손잡이 */
@@ -409,6 +458,11 @@ body{
   color:white;
 }
 
+/* 접힌 상태 : 화면 밖으로 이동 */
+.side-info.collapsed{
+  transform:translateX(-280px);
+}
+
 /* 접히면 내용 숨김 */
 .side-info.collapsed .info-sub,
 .side-info.collapsed .info-title,
@@ -424,272 +478,319 @@ body{
   transition:.25s;
 }
 
+.opt-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:6px;
+}
+
+.opt-text{
+  font-size:11px;
+  color:#bbf7d0;
+  background:rgba(16,185,129,.10);
+  border:1px solid rgba(52,211,153,.55);
+  border-radius:7px;
+  padding:3px 6px;
+  flex:1;
+  text-align:left;
+}
+
+.opt-input{
+  width:31px;          /* ← 가로 길이 (가장 중요) */
+  height:20px;         /* ← 세로 */
+  padding:0;
+  font-size:12px;      /* 숫자 크기 */
+  background:#020617;
+  color:#6ee7b7;
+  border:1px solid #34d399;
+  border-radius:5px;
+  text-align:center;
+  font-weight:700;
+}
+
+.opt-input:focus{
+  outline:none;
+  box-shadow:0 0 8px rgba(16,185,129,.8);
+}
+
+/* 숫자 화살표 제거 */
+.opt-input::-webkit-outer-spin-button,
+.opt-input::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+.opt-input[type=number]{ -moz-appearance:textfield; }
+
+/* 숫자 입력 화살표 제거 */
+.opt-input::-webkit-outer-spin-button,
+.opt-input::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+
+.opt-input{
+  -moz-appearance:textfield;
+}
+
+/* 옵션 최대치 달성 (노란색) */
+.opt-text.maxed{
+  color:#fff3b0;
+  background:rgba(255,215,0,.18);
+  border:1px solid rgba(255,215,0,.9);
+
+  box-shadow:
+    0 0 10px rgba(255,215,0,.9),
+    inset 0 0 8px rgba(255,215,0,.35);
+
+  font-weight:700;
+}
+
+/* 입력칸도 같이 강조 */
+.opt-input.maxed{
+  border:1px solid #ffd700 !important;
+  background:rgba(255,215,0,.15);
+  color:#ffe066;
+  font-weight:700;
+}
 </style>
+
 </head>
 
 <body>
-  
-  <div class="top-header">
-    
-  <button class="back-btn" onclick="goPage('index')">🧮 기질 파밍</button>
-  <button class="back-btn" onclick="goPage('daily')">📋 체크리스트</button>
+
+<div class="top-header">
+
+  <button class="back-btn" onclick="goPage('index')">
+    ↩️ 뒤로가기
+  </button>
+
+  <button class="reset-owned-btn" onclick="resetOwned()">
+    🧹 획득 초기화
+  </button>
+
+  <div class="title">
+  무기 도감
+  <span class="count" id="totalCount">(0 / 0)</span>
 </div>
 
-
-  <!-- 왼쪽 패널 -->
-  <div class="side-info">
+</div>
+<div class="side-info">
   <div class="info-box">
     <div class="side-toggle" id="sideToggle">❮</div>
     <div class="info-sub">SYSTEM</div>
-    <div class="info-title">체크리스트 안내</div>
+<div class="info-title">도감 안내</div>
 
-    <ul class="guide-list">
-      <li>기질 파밍 클릭시 기질파밍 으로 이동</li>
-      <li>좌클릭시 세부 항목 확인 가능</li>
-      <li>체크 하여 완료 표시 자동으로 퍼센티지 계산</li>
-      <li>우클릭시 제외 가능(퍼센티지 에서 제외)</li>
-      <li>숨김ON 하여 완료된 항목 자동 숨김</li>
-      <li>전체 해제로 체크 일괄 해제</li>
-      <li>오전 5시를 기준으로 자동 체크 해제</li>
-    </ul>
-  </div>
-  </div>
-
-  <!-- 오른쪽 본문 -->
-  
-    <div class="container">
-  <!-- 상단 -->
-  <div class="header">
-  <div class="header-top">
-    <div>
-      <div style="font-size:22px;font-weight:600">‼️관리자 체크리스트‼️</div>
-      <div id="date"></div>
-    </div>
-  <div style="text-align:right">
-    <div class="percent" id="percent">0%</div>
-    <div class="reset-timer" id="resetTimer">05:00:00</div>
-  </div>
-  </div>
-
-  <div class="progress-wrap">
-    <div id="progressBar"></div>
-  </div>
-
-  <div class="controls">
-    <span class="btn" id="hideBtn">숨김 OFF</span>
-        <span class="btn" id="excludeViewBtn">제외 보기 OFF</span>
-    <span class="btn" id="resetBtn">전체 해제</span>
+<ul class="guide-list">
+  <li>무기 우클릭 하여 획득 표시</li>
+  <li>획득 무기 우클릭 하여 표시 해제</li>
+  <li>기록은 브라우저에 자동 저장</li>
+  <li>획득 초기화 클릭시 획득 표시 전체 삭제</li>
+  <li>뒤로 가기 클릭시 기질파밍 이동 </li>
+  <li>기질 수치를 직접 입력해서 2유효라도 괜찮은 기질 기록 가능 </li>
+  <li>각 옵션의 최고수치 입력시 노랗게 변함</li>
+</ul>
   </div>
 </div>
-
-
-<!-- 카테고리 -->
-<div class="category-title">● 지역 건설</div>
-
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">거점 관리</div>
-        <div class="group-desc">공장 생산품으로 관리권 교환하기</div>
-      </div>
-    </div>
-    <div class="group-count">0/2</div>
-  </div>
-
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 4번 협곡 관리권 교환
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 무릉 관리권 교환
-    </label>
-  </div>
-
+<div class="container">
+<div class="grade-title grade-6-title">
+  ★ 6성 무기
+  <span class="count" id="sixCount">(0 / 0)</span>
 </div>
+<div class="grid" id="grid6"></div>
 
-
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">물자 관리</div>
-        <div class="group-desc">무트코인</div>
-      </div>
-    </div>
-    <div class="group-count">0/2</div>
-  </div>
-
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 4번 협곡 변동물자
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 무릉 변동물자
-    </label>
-  </div>
-
+<div class="grade-title grade-5-title">
+  ★ 5성 무기
+  <span class="count" id="fiveCount">(0 / 0)</span>
 </div>
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">저장고 노드</div>
-        <div class="group-desc">배달의 민족 주문~</div>
-      </div>
-    </div>
-    <div class="group-count">0/4</div>
-  </div>
-
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 오리지늄 연구 구역
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 광맥 구역
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 에너지 공급 고지
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 무릉성 도심
-    </label>
-  </div>
+<div class="grid" id="grid5"></div>
 </div>
-  <div class="category-title">● 일일 수령</div>
-
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">상점</div>
-        <div class="group-desc">매일매일 꼭 할것! </div>
-      </div>
-    </div>
-    <div class="group-count">0/4</div>
-  </div>
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 크레딧 거래소
-    </label>
-  </div>
-</div>
-
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">재활용 센터</div>
-        <div class="group-desc">일괄수령 급함! </div>
-      </div>
-    </div>
-    <div class="group-count">0/8</div>
-  </div>
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 협곡길
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 거점지역
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 아부레이 채석장
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 오리지늄 연구 구역
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 광맥 구역
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 에너지 공급 고지
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 무릉성
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 경옥 골짜기
-    </label>
-  </div>
-</div>
-
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">필수 항목</div>
-        <div class="group-desc">매일매일 확인 할것! </div>
-      </div>
-    </div>
-    <div class="group-count">0/2</div>
-  </div>
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 일일 활약도 100
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 이성 소모(본인 기준 여유로우면 체크)
-    </label>
-  </div>
-</div>
-
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">제작 재료</div>
-        <div class="group-desc">하는 사람만? </div>
-      </div>
-    </div>
-    <div class="group-count">0/2</div>
-  </div>
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 농작물 수확
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 비료 재료 수집
-    </label>
-  </div>
-</div>
-
-<div class="group">
-  <div class="group-header">
-    <div style="display:flex;align-items:center;">
-      <input type="checkbox" class="group-check">
-      <div class="group-info">
-        <div class="group-title">제강호</div>
-        <div class="group-desc">나여! 관리자! </div>
-      </div>
-    </div>
-    <div class="group-count">0/2</div>
-  </div>
-  <div class="group-items">
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 정보 교류 5회
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 생산 지원 5회
-    </label>
-    <label class="sub-item">
-      <input type="checkbox" class="task"> 제강호 관리
-    </label>
-  </div>
-</div>
-
-</div> 
-
 <script>
 
-  let showExcluded = false; // 화면 표시 상태 (보기용)
-  let excludedGroups = new Set(JSON.parse(localStorage.getItem("excludedGroups")||"[]"));
+
+
+let weapons=[];
+let owned=new Set(JSON.parse(localStorage.getItem("excludedCards")||"[]"));
+let optionCounts = JSON.parse(localStorage.getItem("optionCounts") || "{}");
+
+load();
+
+async function load(){
+  const res = await fetch("https://kuu6132.github.io/db.json");
+  const data=await res.json();
+  weapons=data.db;
+  render();
+  updateCounts();
+}
+
+function normalizeText(str){
+  if(!str) return "";
+  return str
+    .toString()
+    .replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/\u00A0/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function createOptionInput(weaponName, optionText, index){
+
+  if(!optionText) return "";
+
+  // 우리가 실제 저장한 key 방식
+  const key = weaponName + "_" + index;
+
+  // 저장된 값 읽기 (없으면 0)
+  const value = optionCounts[key] ?? 0;
+
+  return `
+    <div class="opt-row">
+      <span class="opt-text">${optionText}</span>
+      <input type="number"
+        min="0"
+        class="opt-input"
+        data-weapon="${weaponName}"
+        data-index="${index}"
+        value="${value}">
+    </div>
+  `;
+}
+
+function updateOptionHighlight(input){
+
+  const index = Number(input.dataset.index);
+  const value = Number(input.value);
+
+  const row = input.closest(".opt-row");
+  const text = row.querySelector(".opt-text");
+
+  let max = 0;
+
+  // 옵션별 최대값
+  if(index === 1 || index === 2) max = 6;
+  if(index === 3) max = 3;
+
+  if(value >= max){
+    text.classList.add("maxed");
+    input.classList.add("maxed");
+  }else{
+    text.classList.remove("maxed");
+    input.classList.remove("maxed");
+  }
+}
+
+function render(){
+
+  const grid6=document.getElementById("grid6");
+  const grid5=document.getElementById("grid5");
+
+  grid6.innerHTML="";
+  grid5.innerHTML="";
+
+  weapons.forEach(w=>{
+
+    const name=normalizeText(w["이름"]);
+
+    const card=document.createElement("div");
+    card.className="card";
+
+    const grade=String(w["성급"]);
+    if(grade.includes("6")) card.classList.add("grade6");
+    else card.classList.add("grade5");
+
+    if(owned.has(name)) card.classList.add("done");
+
+    const img=
+    "https://cdn.jsdelivr.net/gh/kuu6132/end-field@main/%EB%AC%B4%EA%B8%B0/"
+    +encodeURIComponent(name)+".png";
+
+    const optionHTML = `
+    <div class="card-options">
+      ${createOptionInput(name, w["옵션1"], 1)}
+      ${createOptionInput(name, w["옵션2"], 2)}
+      ${createOptionInput(name, w["옵션3"], 3)}
+    </div>
+  `;
+
+  card.innerHTML=`
+    <div class="card-img">
+      <img src="${img}"
+      onerror="this.src='https://via.placeholder.com/120x110?text=?'">
+    </div>
+
+    <div class="card-name">${name}</div>
+
+    ${optionHTML}
+  `;
+
+    // 우클릭 획득 체크
+    card.addEventListener("contextmenu",e=>{
+      e.preventDefault();
+
+      if(owned.has(name)){
+        owned.delete(name);
+        card.classList.remove("done");
+      }else{
+        owned.add(name);
+        card.classList.add("done");
+      }
+
+      localStorage.setItem("excludedCards",JSON.stringify([...owned]));
+      updateCounts();
+    });
+
+    if(grade.includes("6")) grid6.appendChild(card);
+    else grid5.appendChild(card);
+  });
+
+  // 숫자 입력 저장
+    document.querySelectorAll(".opt-input").forEach(input=>{
+
+    input.addEventListener("input", e=>{
+
+    let v = e.target.value;
+
+    // 숫자만 허용
+    v = v.replace(/[^0-9]/g,'');
+
+    // 마지막 입력 숫자만 남김
+    if(v.length > 1){
+      v = v.charAt(v.length - 1);
+    }
+
+    // 옵션 번호 가져오기
+    const index = Number(e.target.dataset.index);
+
+    // 옵션별 최대치
+    let max = 9;
+    if(index === 1 || index === 2) max = 6; // 옵션1,2
+    if(index === 3) max = 3;                // 옵션3
+
+    // 초과 입력 방지
+    if(Number(v) > max){
+      v = String(max);
+    }
+
+    // 빈칸 방지
+    if(v === "") v = "0";
+
+    e.target.value = v;
+    updateOptionHighlight(e.target);
+    // 저장 key 생성
+    const weapon = e.target.dataset.weapon;
+    const key = weapon + "_" + index;
+
+    optionCounts[key] = v;
+    localStorage.setItem("optionCounts", JSON.stringify(optionCounts));
+
+  });
+
+});
+  // 저장된 값 기준으로 색 적용
+document.querySelectorAll(".opt-input").forEach(input=>{
+  updateOptionHighlight(input);
+});
+}
 
 function goPage(page){
 
@@ -709,285 +810,6 @@ function goPage(page){
   }
 }
 
-
-/* 날짜 */
-document.getElementById("date").textContent = 
-  new Date().toLocaleDateString("ko-KR", {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long' // "월요일"까지 표시
-});
-
-document.querySelectorAll(".group").forEach((group,i)=>{
-
-  const id = "group_" + i;
-  group.dataset.groupId = id;
-
-  // 우클릭 → 제외 토글
-  group.addEventListener("contextmenu", e=>{
-    e.preventDefault();
-
-    if(e.target.tagName === "INPUT") return;
-
-    if(excludedGroups.has(id)){
-      excludedGroups.delete(id);
-    }else{
-      excludedGroups.add(id);
-    }
-
-    localStorage.setItem("excludedGroups", JSON.stringify([...excludedGroups]));
-
-    applyExcludedVisibility();
-    updateAll();
-  });
-
-});
-
-/* 상위 체크 → 하위 전체 체크 */
-document.querySelectorAll(".group-check").forEach(groupCheck=>{
-  groupCheck.addEventListener("change", e=>{
-    const group = e.target.closest(".group");
-    const tasks = group.querySelectorAll(".task");
-
-    tasks.forEach(t=>{
-      t.checked = e.target.checked;
-      t.parentElement.classList.toggle("completed", t.checked);
-    });
-
-    updateAll();
-    saveState();
-  });
-});
-
-
-/* 하위 체크 → 상위 체크 상태 반영 */
-document.addEventListener("change", e=>{
-  if(!e.target.classList.contains("task")) return;
-
-  const group = e.target.closest(".group");
-  const tasks = group.querySelectorAll(".task");
-  const checked = group.querySelectorAll(".task:checked");
-  const groupCheck = group.querySelector(".group-check");
-
-  groupCheck.checked = (tasks.length === checked.length);
-
-  e.target.parentElement.classList.toggle("completed", e.target.checked);
-
-  updateAll();
-  saveState();
-});
-
-const excludeViewBtn = document.getElementById("excludeViewBtn");
-
-excludeViewBtn.onclick = ()=>{
-  showExcluded = !showExcluded;
-
-  excludeViewBtn.textContent =
-    showExcluded ? "제외 보기 ON" : "제외 보기 OFF";
-
-  excludeViewBtn.classList.toggle("active-hide");
-
-  applyExcludedVisibility();
-};
-
-function applyExcludedVisibility(){
-
-  document.querySelectorAll(".group").forEach(group=>{
-    const id = group.dataset.groupId;
-
-    if(excludedGroups.has(id)){
-      // 제외된 그룹
-      if(showExcluded){
-        group.style.display = "";      // 보기 ON → 보여줌
-        group.style.opacity = "0.35";  // 구분용 흐림
-      }else{
-        group.style.display = "none";  // 보기 OFF → 숨김
-      }
-    }else{
-      // 정상 그룹
-      group.style.display = "";
-      group.style.opacity = "1";
-    }
-  });
-
-}
-
-function saveState(){
-  const states = [];
-
-  document.querySelectorAll(".task").forEach((t,i)=>{
-    states[i] = t.checked;
-  });
-
-  localStorage.setItem("dailyChecklist", JSON.stringify(states));
-}
-
-/* 그룹 카운트 + 전체 진행률 */
-function updateAll(){
-
-  let total = 0;
-  let done = 0;
-
-  document.querySelectorAll(".group").forEach(group=>{
-
-    const groupId = group.dataset.groupId;
-
-    // ★ 제외된 그룹은 퍼센트 계산에서 완전 제외
-    if(excludedGroups.has(groupId)){
-      group.querySelector(".group-count").textContent = "-/-";
-      group.classList.remove("done");
-      return;
-    }
-
-    const tasks = group.querySelectorAll(".task");
-    const checked = group.querySelectorAll(".task:checked");
-
-    group.querySelector(".group-count").textContent =
-      `${checked.length}/${tasks.length}`;
-
-    if(tasks.length === checked.length && tasks.length !== 0){
-      group.classList.add("done");
-    }else{
-      group.classList.remove("done");
-    }
-
-    total += tasks.length;
-    done += checked.length;
-  });
-
-  const percent = total ? Math.round(done/total*100) : 0;
-
-  document.getElementById("percent").textContent = percent+"%";
-  document.getElementById("progressBar").style.width = percent+"%";
-}
-
-/* 아코디언 */
-document.querySelectorAll(".group-header").forEach(header=>{
-  header.addEventListener("click", e=>{
-    if(e.target.tagName === "INPUT") return;
-    header.parentElement.classList.toggle("open");
-  });
-});
-
-
-/* 완료 숨기기 */
-let hide=false;
-const hideBtn=document.getElementById("hideBtn");
-
-hideBtn.onclick=()=>{
-  hide=!hide;
-  document.body.classList.toggle("hide-completed");
-
-  hideBtn.textContent = hide?"숨김 ON":"숨김 OFF";
-  hideBtn.classList.toggle("active-hide", hide);
-};
-document.getElementById("resetBtn").onclick = () => {
-
-  // 1. 모든 하위 체크 해제
-  document.querySelectorAll(".task").forEach(t=>{
-    t.checked = false;
-    t.parentElement.classList.remove("completed");
-  });
-
-  // 2. 모든 그룹 체크 해제
-  document.querySelectorAll(".group-check").forEach(g=>{
-    g.checked = false;
-  });
-
-  // 3. 그룹 완료 표시 제거
-  document.querySelectorAll(".group").forEach(group=>{
-    group.classList.remove("done");
-  });
-  localStorage.removeItem("dailyChecklist");
-updateAll();
-};
-
-function dailyResetCheck(){
-
-  const todayKey = getResetKeyDate();
-  const lastKey = localStorage.getItem("dailyResetKey");
-
-  // 처음 접속
-  if(!lastKey){
-    localStorage.setItem("dailyResetKey", todayKey);
-    return;
-  }
-
-  // 날짜가 바뀌었다 = 05시 지났다
-  if(lastKey !== todayKey){
-
-    // 체크 전부 해제
-    document.querySelectorAll(".task").forEach(t=>{
-      t.checked = false;
-      t.parentElement.classList.remove("completed");
-    });
-
-    document.querySelectorAll(".group-check").forEach(g=>{
-      g.checked = false;
-    });
-
-    document.querySelectorAll(".group").forEach(group=>{
-      group.classList.remove("done");
-    });
-
-    localStorage.removeItem("dailyChecklist");
-
-    // 새로운 날짜 저장
-    localStorage.setItem("dailyResetKey", todayKey);
-
-    updateAll();
-  }
-}
-
-/* ===== 서버 리셋 기준 날짜 (05:00) ===== */
-function getResetKeyDate(){
-
-  const now = new Date();
-
-  // 오늘 05:00
-  const resetToday = new Date();
-  resetToday.setHours(5,0,0,0);
-
-  // 아직 5시 이전이면 → 어제 날짜로 취급
-  if(now < resetToday){
-    resetToday.setDate(resetToday.getDate() - 1);
-  }
-
-  // YYYY-MM-DD 형태
-  return resetToday.toISOString().slice(0,10);
-}
-
-function loadState(){
-  const saved = localStorage.getItem("dailyChecklist");
-  if(!saved) return;
-
-  const states = JSON.parse(saved);
-
-  // 1️⃣ 하위 체크 복원
-  document.querySelectorAll(".task").forEach((t,i)=>{
-    if(states[i]){
-      t.checked = true;
-      t.parentElement.classList.add("completed");
-    }
-  });
-
-  // 2️⃣ 그룹 체크 상태 재계산 (여기가 핵심)
-  document.querySelectorAll(".group").forEach(group=>{
-    const tasks = group.querySelectorAll(".task");
-    const checked = group.querySelectorAll(".task:checked");
-    const groupCheck = group.querySelector(".group-check");
-
-    if(groupCheck){
-      groupCheck.checked = (tasks.length > 0 && tasks.length === checked.length);
-    }
-  });
-
-  updateAll();
-}
-loadState();
-dailyResetCheck();
-
 window.addEventListener("DOMContentLoaded", () => {
   const header = document.querySelector(".top-header");
   if(!header) return;
@@ -1001,66 +823,50 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-function setActiveTab(){
+function resetOwned(){
 
-  let currentPage = "index";
+  // 확인창 (실수 방지)
+  if(!confirm("모든 무기의 획득 상태를 초기화 하시겠습니까?")) return;
 
-  // 1️⃣ GAS : ?page=
-  const params = new URLSearchParams(window.location.search);
-  const paramPage = params.get("page");
+  // 1. localStorage 삭제
+  localStorage.removeItem("excludedCards");
 
-  if(paramPage){
-    currentPage = paramPage;
-  }
-  else{
-    // 2️⃣ GitHub Pages 파일명 판별
-    const href = location.href.toLowerCase();
+  // 2. 메모리 데이터 초기화
+  owned.clear();
 
-    if(href.includes("daily")) currentPage = "daily";
-    else  currentPage = "index";
-  }
-
-  // 버튼 active 적용
-  document.querySelectorAll(".back-btn").forEach(btn=>{
-    btn.classList.remove("active");
-
-    const onclick = btn.getAttribute("onclick");
-    if(!onclick) return;
-
-    if(onclick.includes(currentPage)){
-      btn.classList.add("active");
-    }
-  });
+  // 3. 화면 다시 그림
+  render();
 }
 
-let lastResetKey = getResetKeyDate();
+function updateCounts(){
 
-function updateResetTimer(){
+  let totalOwned = 0;
+  let sixOwned = 0;
+  let fiveOwned = 0;
 
-  const now = new Date();
-  let nextReset = new Date();
+  let total = weapons.length;
+  let sixTotal = 0;
+  let fiveTotal = 0;
 
-  nextReset.setHours(5,0,0,0);
+  weapons.forEach(w=>{
+    const name = normalizeText(w["이름"]);
+    const isOwned = owned.has(name);
+    const grade = String(w["성급"]);
 
-  if(now >= nextReset){
-    nextReset.setDate(nextReset.getDate() + 1);
-  }
+    if(grade.includes("6")){
+      sixTotal++;
+      if(isOwned) sixOwned++;
+    }else{
+      fiveTotal++;
+      if(isOwned) fiveOwned++;
+    }
 
-  const diff = nextReset - now;
+    if(isOwned) totalOwned++;
+  });
 
-  const h = Math.floor(diff/1000/60/60);
-  const m = Math.floor(diff/1000/60%60);
-  const s = Math.floor(diff/1000%60);
-
-  document.getElementById("resetTimer").textContent =
-    `초기화까지 ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-
-  // ⭐ 여기 추가 : 날짜가 바뀌었는지 실시간 감지
-  const currentKey = getResetKeyDate();
-  if(currentKey !== lastResetKey){
-    lastResetKey = currentKey;
-    dailyResetCheck();   // 즉시 초기화 실행
-  }
+  document.getElementById("totalCount").textContent = `(${totalOwned} / ${total})`;
+  document.getElementById("sixCount").textContent   = `(${sixOwned} / ${sixTotal})`;
+  document.getElementById("fiveCount").textContent  = `(${fiveOwned} / ${fiveTotal})`;
 }
 
 /* ===== 시스템 패널 접기 ===== */
@@ -1083,14 +889,8 @@ toggleBtn.onclick = ()=>{
   localStorage.setItem("sideCollapsed", collapsed ? "1" : "0");
 };
 
-// 1초마다 갱신
-setInterval(updateResetTimer,1000);
-updateResetTimer();
-
-/* GAS 대응 + 일반웹 대응 */
-document.addEventListener("DOMContentLoaded", setActiveTab);
-
 </script>
+
 
 </body>
 </html>
