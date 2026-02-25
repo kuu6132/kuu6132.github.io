@@ -3,31 +3,42 @@
 <head>
   <base target="_top">
   <style>
+    
     body{
   margin:0;
   background: radial-gradient(circle at 50% 20%, #0f172a, #020617 70%);
   font-family: "Segoe UI", Arial, sans-serif;
   color:#e5e7eb;
   padding-top:80px; /* ⭐ 헤더 높이만큼 밀어줌 (필수) */
-  padding-left:280px;
 }
 
-    .container {
-  max-width: 1200px;
-  width: 100%;
-  padding: 16px;
-  margin: 0 auto;
-  box-sizing: border-box;
+
+    .container{
+  max-width:1200px;
+  width:100%;
+  margin:0 auto;
+  padding:16px;
+  box-sizing:border-box;
+
+  transition:margin-left .35s cubic-bezier(.25,.8,.25,1);
 }
 
-    .panel {
-      padding: 10px 12px 12px;
-      margin-bottom: 14px;
-      background:rgba(25,35,60,0.6);
-      border-radius:18px;
-      padding:25px;
-      box-shadow:0 0 25px rgba(0,0,0,.4);
-    }
+    .panel{
+  padding:22px;
+  margin-bottom:18px;
+  background:rgba(25,35,60,0.55);
+  border-radius:20px;
+
+  backdrop-filter:blur(10px);
+
+  border:1px solid rgba(96,165,250,.18);
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(255,255,255,.03);
+
+  transition:.25s;
+}
 
     .panel-title {
   margin-bottom:10px;
@@ -47,11 +58,12 @@
     .options {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 /* 기본 버튼 */
 .btn {
+  flex:0 0 auto;
   padding: 6px 12px;
   border-radius: 6px;
   border: 1px solid #1f6f78;
@@ -407,10 +419,12 @@
 /* ===== 왼쪽 설명 영역 ===== */
 .side-info{
   position:fixed;
-  top:95px;
-  left:18px;
-  width:280px;
-  z-index:998;
+  top:110px;
+  left:20px;
+  width:320px;
+  z-index:900;
+
+  transition:transform .35s cubic-bezier(.25,.8,.25,1);
 }
 
 /* HUD 패널 */
@@ -506,6 +520,10 @@
   width:55%;
   line-height:1.6;
   font-size:14px;
+
+  /* ⭐ 추가 (핵심) */
+  word-break:break-word;
+  overflow-wrap:anywhere;
 }
 
 /* 검색창 */
@@ -659,12 +677,70 @@
   text-shadow:0 0 10px rgba(96,165,250,.9);
 }
 
+/* 접기 버튼 */
+.side-toggle{
+  position:absolute;
+  right:-5px;
+  top:18px;
+
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:16px;
+  font-weight:bold;
+
+  background:rgba(30,41,59,.9);
+  border:1px solid rgba(96,165,250,.5);
+  color:#93c5fd;
+
+  box-shadow:0 0 12px rgba(59,130,246,.5);
+  transition:.25s;
+}
+
+.side-toggle:hover{
+  background:#3b82f6;
+  color:white;
+}
+
+/* 접힌 상태 : 화면 밖으로 이동 */
+.side-info.collapsed{
+  transform:translateX(-315px);
+}
+
+/* 내용 숨김 */
+.side-info.collapsed .info-sub,
+.side-info.collapsed .info-title,
+.side-info.collapsed .guide-list{
+  opacity:0;
+  pointer-events:none;
+  transform:translateX(-10px);
+}
+
+.info-box{
+  position:relative;
+  overflow:hidden;
+  transition:.25s;
+}
+
+
   </style>
 </head>
 <body>
+  
 <div class="top-header">
-  <div class="side-info">
+  
+  <button class="back-btn" onclick="goPage('index')">🧮 기질 파밍</button>
+  <button class="back-btn" onclick="goPage('daily')">📋 체크리스트</button>
+</div>
+<div class="side-info">
   <div class="info-box">
+    <div class="side-toggle" id="sideToggle">❮</div>
     <div class="info-sub">SYSTEM</div>
 <div class="info-title">파밍 안내</div>
       <ul class="guide-list">
@@ -683,9 +759,6 @@
   
 </ul>
   </div>
-</div>
-  <button class="back-btn" onclick="goPage('index')">🧮 기질 파밍</button>
-  <button class="back-btn" onclick="goPage('daily')">📋 체크리스트</button>
 </div>
 <div class="container">
 
@@ -862,14 +935,21 @@ function updateResult() {
   const selectedAreaText = selected.area ? selected.area : "없음";
 
   statsEl.innerHTML = `
-  ‼️최다 기질 저격 옵션‼️<br>
-    선택한 지역: <strong>${selectedAreaText}</strong><br>
-    스탯 옵션: <strong>${'없음'}</strong><br>
-    스킬 옵션: <strong>${'없음'}</strong><br>
-    ============================================================<br>
-    최고 효율 파밍지역: <strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
-  
- `;
+  <div class="summary-block">
+  <div class="summary-title">‼️ 최다 기질 저격 옵션 ‼️</div>
+
+    <div>선택한 지역: <b>${selectedAreaText}</b></div>
+  <div>스탯 옵션: <b>${'없음'}</b></div>
+  <div>스킬 옵션: <b>${'없음'}</b></div>
+
+  <hr class="summary-divider">
+
+  <div class="summary-recommend">
+    추천 파밍지역:
+    <b>${best ? best.area + " (나오는 무기 " + best.count + "개)" : "없음"}</b>
+  </div>
+</div>
+`;
   // 1. 선택 여부 확인
   const hasPrimary = selected.primary && selected.primary.length > 0;
   const isAnySelected = hasPrimary || !!selected.secondary || !!selected.skill || !!selected.area;
@@ -1003,13 +1083,21 @@ function updateResult() {
   const selectedAreaText = selected.area ? selected.area : "없음";
 
   statsEl.innerHTML = `
-  ‼️최다 기질 저격 옵션‼️<br>
-  선택한 지역: <strong>${selectedAreaText}</strong><br>
-  스탯 옵션: <strong>${optionText}</strong><br>
-  스킬 옵션: <strong>${topText}</strong><br>
-  ============================================================<br>
-  추천 파밍지역:<strong>${best ? best.area + " (나오는 무기" + best.count + "개)" : "없음"}</strong><br>
-  `;
+<div class="summary-block">
+  <div class="summary-title">‼️ 최다 기질 저격 옵션 ‼️</div>
+
+  <div>선택한 지역: <b>${selectedAreaText}</b></div>
+  <div>스탯 옵션: <b>${optionText}</b></div>
+  <div>스킬 옵션: <b>${topText}</b></div>
+
+  <hr class="summary-divider">
+
+  <div class="summary-recommend">
+    추천 파밍지역:
+    <b>${best ? best.area + " (나오는 무기 " + best.count + "개)" : "없음"}</b>
+  </div>
+</div>
+`;
  result.sort((a,b)=>{
 
   const aOwned = excludedIds.has(a["이름"]);
@@ -1523,47 +1611,68 @@ function toggle(type, value, btn) {
 }
 
 function exportToJSON() {
-  const data = localStorage.getItem("excludedCards");
-  if (!data) {
-    alert("저장된 데이터가 없습니다.");
+
+  const saveData = {
+    excludedCards: JSON.parse(localStorage.getItem("excludedCards") || "[]"),
+    optionCounts: JSON.parse(localStorage.getItem("optionCounts") || "{}"),
+    excludedGroups: JSON.parse(localStorage.getItem("excludedGroups") || "[]")
+    
+  };
+
+  // 아무 데이터도 없으면 방지
+  if(
+    saveData.excludedCards.length===0 &&
+    Object.keys(saveData.optionCounts).length===0 &&
+    saveData.dailyChecklist.length===0
+  ){
+    alert("저장할 데이터가 없습니다.");
     return;
   }
 
-  // 1. 파일 내용 생성
-  const blob = new Blob([data], { type: "application/json" });
+  const blob = new Blob(
+    [JSON.stringify(saveData, null, 2)],
+    { type: "application/json" }
+  );
+
   const url = URL.createObjectURL(blob);
 
-  // 2. 가상 링크 제작 및 클릭 (다운로드 실행)
   const a = document.createElement("a");
   a.href = url;
-  a.download = `excluded_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `endfield_backup_${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a);
   a.click();
 
-  // 3. 뒷정리
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-function importFromJSON(event) {
+function importFromJSON(event){
   const file = event.target.files[0];
-  if (!file) return;
+  if(!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const content = e.target.result;
-      // 유효한 JSON인지 검증
-      JSON.parse(content); 
-      
-      // localStorage에 저장 및 화면 갱신
-      localStorage.setItem("excludedCards", content);
-      alert("데이터를 성공적으로 불러왔습니다!");
-      location.reload(); // 변경사항 반영을 위해 새로고침
-    } catch (err) {
-      alert("올바른 JSON 파일이 아닙니다.");
+
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+
+      if(data.excludedCards)
+        localStorage.setItem("excludedCards", JSON.stringify(data.excludedCards));
+
+      if(data.optionCounts)
+        localStorage.setItem("optionCounts", JSON.stringify(data.optionCounts));
+
+      if(data.excludedGroups)
+        localStorage.setItem("excludedGroups", JSON.stringify(data.excludedGroups));
+
+        alert("데이터를 성공적으로 불러왔습니다!");
+      location.reload();
+
+    }catch(err){
+      alert("올바른 백업 파일이 아닙니다.");
     }
   };
+
   reader.readAsText(file);
 }
 
@@ -2290,6 +2399,25 @@ function searchSort(a, b){
   /* 4️⃣ 이름순 */
   return a["이름"].localeCompare(b["이름"], 'ko');
 }
+
+const toggleBtn = document.getElementById("sideToggle");
+const sideInfo = document.querySelector(".side-info");
+
+// 저장된 상태 불러오기
+if(localStorage.getItem("sideCollapsed") === "1"){
+  sideInfo.classList.add("collapsed");
+  toggleBtn.textContent = "❯";
+}
+
+toggleBtn.onclick = ()=>{
+  sideInfo.classList.toggle("collapsed");
+
+  const collapsed = sideInfo.classList.contains("collapsed");
+
+  toggleBtn.textContent = collapsed ? "❯" : "❮";
+
+  localStorage.setItem("sideCollapsed", collapsed ? "1" : "0");
+};
 
 document.addEventListener("DOMContentLoaded", () => {
 

@@ -13,10 +13,12 @@ body{
   padding-top:80px;
 }
 
-.container{
+ .container{
+  max-width:1000px;
   width:100%;
-  max-width:900px;
-  margin-left:380px;
+  margin:0 auto;
+  padding:0 20px;
+  box-sizing:border-box;
 }
 
 /* 상단 카드 */
@@ -280,14 +282,6 @@ body{
   height:fit-content; /* ⭐ 길어지는 원인 제거 */
 }
 
-.side-info{
-  position:fixed;
-  top:110px;   /* 헤더 아래 정확히 */
-  left:30px;
-  width:320px;
-  z-index:900;
-}
-
 /* HUD 패널 */
 .info-box{
   background:linear-gradient(
@@ -367,10 +361,74 @@ body{
   letter-spacing:1px;
 }
 
+/* ===== 접히는 시스템 패널 ===== */
+
+.side-info{
+  position:fixed;
+  top:110px;
+  left:20px;
+  width:280px;
+  z-index:1000;
+  transform:translateX(0);
+  transition:transform .35s ease;
+}
+
+/* 접힌 상태 : 화면 밖으로 이동 */
+.side-info.collapsed{
+  transform:translateX(-280px);
+}
+
+/* 손잡이 */
+.side-toggle{
+  position:absolute;
+  right:-5px;
+  top:18px;
+
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:16px;
+  font-weight:bold;
+
+  background:rgba(30,41,59,.9);
+  border:1px solid rgba(96,165,250,.5);
+  color:#93c5fd;
+
+  box-shadow:0 0 12px rgba(59,130,246,.5);
+  transition:.25s;
+}
+
+.side-toggle:hover{
+  background:#3b82f6;
+  color:white;
+}
+
+/* 접히면 내용 숨김 */
+.side-info.collapsed .info-sub,
+.side-info.collapsed .info-title,
+.side-info.collapsed .guide-list{
+  opacity:0;
+  pointer-events:none;
+  transform:translateX(-10px);
+}
+
+.info-box{
+  position:relative;
+  overflow:hidden;
+  transition:.25s;
+}
+
 </style>
 </head>
 
 <body>
+  
   <div class="top-header">
     
   <button class="back-btn" onclick="goPage('index')">🧮 기질 파밍</button>
@@ -381,6 +439,7 @@ body{
   <!-- 왼쪽 패널 -->
   <div class="side-info">
   <div class="info-box">
+    <div class="side-toggle" id="sideToggle">❮</div>
     <div class="info-sub">SYSTEM</div>
     <div class="info-title">체크리스트 안내</div>
 
@@ -1003,6 +1062,26 @@ function updateResetTimer(){
     dailyResetCheck();   // 즉시 초기화 실행
   }
 }
+
+/* ===== 시스템 패널 접기 ===== */
+
+const toggleBtn = document.getElementById("sideToggle");
+const sideInfo = document.querySelector(".side-info");
+
+// 이전 상태 복구
+if(localStorage.getItem("sideCollapsed") === "1"){
+  sideInfo.classList.add("collapsed");
+  toggleBtn.textContent = "❯";
+}
+
+toggleBtn.onclick = ()=>{
+  sideInfo.classList.toggle("collapsed");
+
+  const collapsed = sideInfo.classList.contains("collapsed");
+  toggleBtn.textContent = collapsed ? "❯" : "❮";
+
+  localStorage.setItem("sideCollapsed", collapsed ? "1" : "0");
+};
 
 // 1초마다 갱신
 setInterval(updateResetTimer,1000);
